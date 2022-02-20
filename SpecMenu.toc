@@ -1,0 +1,12 @@
+## Interface: 30300
+## Title: SpecMenu
+## Notes: Specialization Menu For Ascension
+## Author: Anch
+## SavedVariables: SpecMenu
+## SavedVariablesPerCharacter: SpecMenuDB
+## X-Category: UnitFrame
+## X-OptionsFrame: SpecMenuOptionsFrame
+## DefaultState: enabled
+## Version: 1.0
+
+embeds.xml

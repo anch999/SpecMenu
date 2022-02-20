@@ -1,0 +1,75 @@
+<Ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.blizzard.com/wow/ui/">
+	<Frame name="SpecMenuFrame" parent="UIParent" template="" toplevel="true" movable="true" enableMouse="true" clampedToScreen="true">
+		<Size>
+			<AbsDimension x="120" y="90"/>
+		</Size>
+		<Anchors>
+			<Anchor point="CENTER" relativeTo="UIParent" />
+		</Anchors>
+		<Scripts>
+			<OnLoad>
+				this:RegisterEvent("VARIABLES_LOADED");
+				SpecMenuFrame_OnLoad();
+			</OnLoad>
+			<OnEvent>
+				SpecMenuFrame_OnEvent();
+			</OnEvent>
+			<OnDragStart>
+				SpecMenuFrame_OnClick_MoveFrame();
+			</OnDragStart>
+			<OnDragStop>
+				SpecMenuFrame_OnClick_StopMoveFrame();
+			</OnDragStop>
+		</Scripts>
+		<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<BackgroundInsets>
+				<AbsInset left="11" right="12" top="12" bottom="11" />
+			</BackgroundInsets>
+			<EdgeSize>
+				<AbsValue val="32" />
+			</EdgeSize>
+			<TileSize>
+				<AbsValue val="32" />
+			</TileSize>
+		</Backdrop>
+		<Frames>
+			<Button name="$parent_Menu" inherits="OptionsButtonTemplate">
+				<Size x="100" y="30" />
+				<Anchors>
+					<Anchor point="BOTTOM">
+						<Offset>
+							<AbsDimension x="0" y="14"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+					<Scripts>
+						<OnLoad>
+    						this:RegisterForClicks("LeftButtonDown", "RightButtonDown");
+						</OnLoad>
+						<OnClick>
+							SpecMenu_OnClick(arg1);
+						</OnClick>
+				</Scripts>
+				
+			</Button>
+			<Button name="$parent_QuickSwap" inherits="OptionsButtonTemplate">
+				<Size x="100" y="30" />
+				<Anchors>
+					<Anchor point="TOP">
+						<Offset>
+							<AbsDimension x="0" y="-14"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+					<Scripts>
+						<OnLoad>
+    						this:RegisterForClicks("LeftButtonDown", "RightButtonDown");
+						</OnLoad>
+						<OnClick>
+							SpecMenuQuickSwap_OnClick(arg1);
+						</OnClick>
+				</Scripts>
+			</Button>
+		</Frames>
+	</Frame>
+</Ui>
