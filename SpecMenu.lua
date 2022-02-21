@@ -9,7 +9,7 @@ SpecMenu_OptionsMenu_Dewdrop = AceLibrary("Dewdrop-2.0");
 local DefaultSpecMenuDB  = {
 	["Specs"] = {},
     ["EnchantPresets"] = {},
-    ["ActiveSpec"] = {1, 1 },
+    ["ActiveSpec"] = {1, 1},
 };
 
 function SpecMenu_PopulateSpecDB()
@@ -20,7 +20,7 @@ function SpecMenu_PopulateSpecDB()
                 SpecName = SpecMenuDB["Specs"][k][1];
             else
                 SpecName = "Specialization "..k;
-                SpecMenuDB["Specs"][k] = {SpecName, "", ""}
+                SpecMenuDB["Specs"][k] = {SpecName, 1, 2}
             end
         end
     end
@@ -45,13 +45,13 @@ end
 function SpecMenu_DewdropClick(specSpell ,specNum)
     if specNum ~= SpecMenuDB["ActiveSpec"][1] then
         if IsMounted() then Dismount() end
-    CA_ActivateSpec(specNum);
+        CA_ActivateSpec(specNum);
     else
         print("Spec is already active")
     end
     SpecMenu_Dewdrop:Close();
     SpecMenu_Dewdrop:Unregister(SpecMenuFrame_Menu);
-    
+    SpecMenu_currentspecNum = specNum;
     addon:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenuSetCurrent);
 end
 
@@ -131,15 +131,16 @@ function SpecMenu_EnchantPreset_DewdropRegister()
 end
 
 function SpecMenuQuickSwap_OnClick()
+    SpecMenu_Dewdrop:Close();
         if (arg1=="LeftButton") then
-            specNum =  SpecMenuDB["Specs"][SpecMenuDB["ActiveSpec"][1]][2]
+            SpecMenu_currentspecNum =  SpecMenuDB["Specs"][SpecMenuDB["ActiveSpec"][1]][2]
         elseif (arg1=="RightButton") then
-            specNum =  SpecMenuDB["Specs"][SpecMenuDB["ActiveSpec"][1]][3]
+            SpecMenu_currentspecNum =  SpecMenuDB["Specs"][SpecMenuDB["ActiveSpec"][1]][3]
         end
 
-        if specNum ~= SpecMenuDB["ActiveSpec"][1] then
+        if SpecMenu_currentspecNum ~= SpecMenuDB["ActiveSpec"][1] then
             if IsMounted() then Dismount(); end
-                CA_ActivateSpec(specNum);
+                CA_ActivateSpec(SpecMenu_currentspecNum);
         else
             print("Spec is already active")
         end
@@ -148,10 +149,11 @@ end
 
 function SpecMenuSetCurrent(event, unit, spellName, spellRank)
     if spellName:find("Specialization") then
-        SpecMenuDB["ActiveSpec"][1] = specNum;
+        SpecMenuDB["ActiveSpec"][1] = SpecMenu_currentspecNum;
     elseif spellName:find("Mystic Enchantment") then
         SpecMenuDB["ActiveSpec"][2] = savedPreset;
     end
+    SpecMenuOptions_OpenOptions();
 end
 
 function SpecMenu_OnClick(arg1)
@@ -219,6 +221,8 @@ function SpecMenuFrame_OnEvent()
     end
     SpecMenu_PopulateSpecDB();
     SpecMenu_PopulatePresetDB();
+    SpecMenuOptionsCreateFrame_Initialize();
+    SpecMenuFrame_QuickSwap:SetText("QuickSwap");
 end
 
 function SpecMenuFrame_OnLoad()
