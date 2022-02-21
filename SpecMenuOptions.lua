@@ -8,16 +8,10 @@ function SpecMenuOptions_Toggle()
 		InterfaceOptionsFrame:Hide();
 	else
 		InterfaceOptionsFrame_OpenToCategory("SpecMenu");
-		SpecMenuOptions_OpenOptions();
 	end
 end
 
 function SpecMenuOptions_OpenOptions()
-    SpecMenuOptions_NameEdit_Onload();
-	SpecMenuOptions_PresetNameEdit_Onload();
-
-end
-function SpecMenuOptions_NameEdit_Onload()
 	local menuID = SpecMenuDB["ActiveSpec"][1];
 	UIDropDownMenu_SetSelectedID(SpecMenuOptions_Menu, menuID);
 	UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap1, SpecMenuDB["Specs"][menuID][2]);
@@ -29,13 +23,12 @@ function SpecMenuOptions_NameEdit_Onload()
 	SpMenuSpecNum = menuID;
 	SpecMenu_QuickswapNum1 = SpecMenuDB["Specs"][menuID][2];
 	SpecMenu_QuickswapNum2 = SpecMenuDB["Specs"][menuID][3];
-end
 
-function SpecMenuOptions_PresetNameEdit_Onload()
 	local presetID = SpecMenuDB["ActiveSpec"][2];
 	UIDropDownMenu_SetSelectedID(SpecMenuOptions_PresetMenu, presetID);
 	UIDropDownMenu_SetText(SpecMenuOptions_PresetMenu, SpecMenuDB["EnchantPresets"][presetID]);
 	SpecMenuOptions_PresetNameEdit:SetText(SpecMenuDB["EnchantPresets"][presetID]);
+	SpecMenuOptions_PresetSet = presetID;
 end
 
 function SpecMenuOptions_Menu_Initialize()
@@ -58,12 +51,6 @@ function SpecMenuOptions_Menu_OnClick()
 	SpMenuSpecNum = thisID;
 	SpecMenu_QuickswapNum1 = SpecMenuDB["Specs"][thisID][2];
 	SpecMenu_QuickswapNum2 = SpecMenuDB["Specs"][thisID][3];
-end
-
-function SpecMenuOptionsFrameOnShow()
-	SpecMenuOptionsCreateFrame_Initialize();
-	SpecMenu_DropDownInitialize();
-	SpecMenuOptions_OpenOptions();
 end
 
 function SpecMenuOptionsCreateFrame_Initialize()

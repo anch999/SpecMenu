@@ -12,11 +12,11 @@ local DefaultSpecMenuDB  = {
     ["ActiveSpec"] = {1, 1},
 };
 
-function SpecMenu_PopulateSpecDB()
+local function SpecMenu_PopulateSpecDB()
     
     for k,v in pairs(SpecMenu_SpecInfo) do
         if IsSpellKnown(v[1]) then
-            if SpecMenuDB["Specs"][k] ~= nil then
+            if SpecMenuDB["Specs"] ~= nil and SpecMenuDB["Specs"][k] ~= nil then
                 SpecName = SpecMenuDB["Specs"][k][1];
             else
                 SpecName = "Specialization "..k;
@@ -27,11 +27,11 @@ function SpecMenu_PopulateSpecDB()
 end
 
 
-function SpecMenu_PopulatePresetDB()
+local function SpecMenu_PopulatePresetDB()
 
     for k,v in pairs(SpecMenu_PresetSpellIDs) do
         if IsSpellKnown(v) then
-            if SpecMenuDB["EnchantPresets"][k] ~= nil then
+            if SpecMenuDB["EnchantPresets"] ~= nil and SpecMenuDB["EnchantPresets"][k] ~= nil then
                 PresetName = SpecMenuDB["EnchantPresets"][k];
             else
                 PresetName = "Enchant Preset "..k;
@@ -42,7 +42,7 @@ function SpecMenu_PopulatePresetDB()
 end
 
 
-function SpecMenu_DewdropClick(specSpell ,specNum)
+local function SpecMenu_DewdropClick(specSpell ,specNum)
     if specNum ~= SpecMenuDB["ActiveSpec"][1] then
         if IsMounted() then Dismount() end
         CA_ActivateSpec(specNum);
@@ -55,7 +55,7 @@ function SpecMenu_DewdropClick(specSpell ,specNum)
     addon:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenuSetCurrent);
 end
 
-function SpecMenu_DewdropRegister()
+local function SpecMenu_DewdropRegister()
     SpecMenu_PopulateSpecDB();
     SpecMenu_Dewdrop:Register(SpecMenuFrame_Menu,
         'point', function(parent)
@@ -87,7 +87,7 @@ function SpecMenu_DewdropRegister()
 	)
 end
 
-function SpecMenu_EnchantPreset_DewdropClick(presetNum)
+local function SpecMenu_EnchantPreset_DewdropClick(presetNum)
     if presetNum ~= SpecMenuDB["ActiveSpec"][2] then
         savedPreset = presetNum;
         if IsMounted() then Dismount() end
@@ -100,7 +100,7 @@ function SpecMenu_EnchantPreset_DewdropClick(presetNum)
     addon:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenuSetCurrent);
 end
 
-function SpecMenu_EnchantPreset_DewdropRegister()    
+local function SpecMenu_EnchantPreset_DewdropRegister()    
     SpecMenu_PopulatePresetDB();
     SpecMenu_EnchantPreset_Dewdrop:Register(SpecMenuFrame_Menu,
         'point', function(parent)
@@ -170,6 +170,8 @@ function SpecMenu_OnClick(arg1)
             SpecMenu_Dewdrop:Open(this);
         elseif (arg1=="RightButton") then
             if IsAltKeyDown() then
+                SpecMenuOptionsCreateFrame_Initialize();
+                SpecMenuOptions_OpenOptions();
                 SpecMenuOptions_Toggle();
             else
                 SpecMenu_EnchantPreset_DewdropRegister()
@@ -219,13 +221,23 @@ function SpecMenuFrame_OnEvent()
     if ( SpecMenuDB == nil ) then
         SpecMenuDB = CloneTable(DefaultSpecMenuDB);
     end
-    SpecMenu_PopulateSpecDB();
-    SpecMenu_PopulatePresetDB();
-    SpecMenuOptionsCreateFrame_Initialize();
-    SpecMenuFrame_QuickSwap:SetText("QuickSwap");
+end
+
+function CloneTable(t)				-- return a copy of the table t
+	local new = {};					-- create a new table
+	local i, v = next(t, nil);		-- i is an index of t, v = t[i]
+	while i do
+		if type(v)=="table" then 
+			v=CloneTable(v);
+		end 
+		new[i] = v;
+		i, v = next(t, i);			-- get next index
+	end
+	return new;
 end
 
 function SpecMenuFrame_OnLoad()
     this:RegisterForDrag("LeftButton");
     SpecMenuFrame_Menu:SetText("Spec|Enchant");
+    SpecMenuFrame_QuickSwap:SetText("QuickSwap");
 end

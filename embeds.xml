@@ -15,9 +15,8 @@
 <Script file="Libs\LibDataBroker-1.1.lua"/>
 <Script file="libs\LibPeriodicTable-3.1\LibPeriodicTable-3.1.lua"/>
 
-
-<Script file="SpecMenu.lua"/>
 <Script file="PreSetIDS.lua"/>
+<Script file="SpecMenu.lua"/>
 <Script file="SpecMenuOptions.lua"/>
 <Include file="SpecMenu.xml"/>
 <Include file="SpecMenuOptions.xml"/>
