@@ -153,7 +153,9 @@ function SpecMenuSetCurrent(event, unit, spellName, spellRank)
     elseif spellName:find("Mystic Enchantment") then
         SpecMenuDB["ActiveSpec"][2] = savedPreset;
     end
-    SpecMenuOptions_OpenOptions();
+    if InterfaceOptionsFrame:IsVisible() then
+        SpecMenuOptions_OpenOptions();
+	end
 end
 
 function SpecMenu_OnClick(arg1)
