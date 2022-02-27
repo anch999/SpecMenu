@@ -52,7 +52,9 @@ local function SpecMenu_DewdropClick(specSpell ,specNum)
     SpecMenu_Dewdrop:Close();
     SpecMenu_Dewdrop:Unregister(SpecMenuFrame_Menu);
     SpecMenu_currentspecNum = specNum;
-    addon:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenuSetCurrent);
+    if InterfaceOptionsFrame:IsVisible() then
+        SpecMenuOptions_OpenOptions();
+	end
 end
 
 local function SpecMenu_DewdropRegister()
@@ -88,8 +90,7 @@ local function SpecMenu_DewdropRegister()
 end
 
 local function SpecMenu_EnchantPreset_DewdropClick(presetNum)
-    if presetNum ~= SpecMenuDB["ActiveSpec"][2] then
-        savedPreset = presetNum;
+    if presetNum ~= (GetREPreset() +1) then
         if IsMounted() then Dismount() end
     RequestChangeRandomEnchantmentPreset(presetNum -1, true);
     else
@@ -97,7 +98,9 @@ local function SpecMenu_EnchantPreset_DewdropClick(presetNum)
     end
     SpecMenu_EnchantPreset_Dewdrop:Close();
     SpecMenu_EnchantPreset_Dewdrop:Unregister(SpecMenuFrame_Menu);
-    addon:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenuSetCurrent);
+    if InterfaceOptionsFrame:IsVisible() then
+        SpecMenuOptions_OpenOptions();
+	end
 end
 
 local function SpecMenu_EnchantPreset_DewdropRegister()    
@@ -144,14 +147,16 @@ function SpecMenuQuickSwap_OnClick()
         else
             print("Spec is already active")
         end
-        addon:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenuSetCurrent);
 end
 
 function SpecMenuSetCurrent(event, unit, spellName, spellRank)
     if spellName:find("Specialization") then
-        SpecMenuDB["ActiveSpec"][1] = SpecMenu_currentspecNum;
-    elseif spellName:find("Mystic Enchantment") then
-        SpecMenuDB["ActiveSpec"][2] = savedPreset;
+        for k,v in pairs(SpecMenu_SpecInfo) do
+            if spellName:find(SpecMenu_SpecInfo[k][3]) then
+                SpecMenu_currentspecNum = SpecMenu_SpecInfo[k][2];
+                SpecMenuDB["ActiveSpec"][1] = SpecMenu_currentspecNum;
+            end
+        end
     end
     if InterfaceOptionsFrame:IsVisible() then
         SpecMenuOptions_OpenOptions();
@@ -242,4 +247,11 @@ function SpecMenuFrame_OnLoad()
     this:RegisterForDrag("LeftButton");
     SpecMenuFrame_Menu:SetText("Spec|Enchant");
     SpecMenuFrame_QuickSwap:SetText("QuickSwap");
+    addon:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenuSetCurrent);
+
+end
+
+function TooltipLoad()
+    GameTooltip:SetOwner(SpecMenuFrame_QuickSwap, "ANCHOR_RIGHT");
+	GameTooltip:SetGuildBankItem(GetCurrentGuildBankTab(), self:GetID());
 end
