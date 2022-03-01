@@ -50,7 +50,6 @@ local function SpecMenu_DewdropClick(specSpell ,specNum)
         print("Spec is already active")
     end
     SpecMenu_Dewdrop:Close();
-    SpecMenu_Dewdrop:Unregister(SpecMenuFrame_Menu);
     SpecMenu_currentspecNum = specNum;
     if InterfaceOptionsFrame:IsVisible() then
         SpecMenuOptions_OpenOptions();
@@ -68,14 +67,13 @@ local function SpecMenu_DewdropRegister()
                     if IsSpellKnown(v[1]) then
                         SpecMenu_Dewdrop:AddLine(
                                 'text', SpecMenuDB["Specs"][k][1],
+                                'checked', SpecChecked(k),
                                 'func', SpecMenu_DewdropClick,
                                 'arg1', v[1],
-                                'arg2', v[2],
-                                'notCheckable', true
+                                'arg2', v[2]
                         )
                     end
                 end
-
                 SpecMenu_Dewdrop:AddLine(
 					'text', "Close Menu",
                     'textR', 0,
@@ -90,17 +88,20 @@ local function SpecMenu_DewdropRegister()
 end
 
 local function SpecMenu_EnchantPreset_DewdropClick(presetNum)
-    if presetNum ~= (GetREPreset() +1) then
         if IsMounted() then Dismount() end
     RequestChangeRandomEnchantmentPreset(presetNum -1, true);
-    else
-        print("Enchant Set is already active")
-    end
     SpecMenu_EnchantPreset_Dewdrop:Close();
-    SpecMenu_EnchantPreset_Dewdrop:Unregister(SpecMenuFrame_Menu);
     if InterfaceOptionsFrame:IsVisible() then
         SpecMenuOptions_OpenOptions();
 	end
+end
+
+function SpecChecked(k)
+    if k == SpecMenuDB["ActiveSpec"][1] then return true end
+end
+
+function PresetChecked(k)
+    if k == (GetREPreset() +1) then return true end
 end
 
 local function SpecMenu_EnchantPreset_DewdropRegister()    
@@ -113,11 +114,11 @@ local function SpecMenu_EnchantPreset_DewdropRegister()
                 for k,v in pairs(SpecMenu_PresetSpellIDs) do
                     if IsSpellKnown(v) then
                         SpecMenu_EnchantPreset_Dewdrop:AddLine(
+                                'checked', PresetChecked(k),
                                 'text', SpecMenuDB["EnchantPresets"][k],
                                 'func', SpecMenu_EnchantPreset_DewdropClick,
-                                'arg1', k,
-                                'notCheckable', true
-                        )
+                                'arg1', k
+                    )
                     end
                 end
                 SpecMenu_EnchantPreset_Dewdrop:AddLine(
@@ -166,11 +167,8 @@ end
 function SpecMenu_OnClick(arg1)
     if SpecMenu_OptionsMenu_Dewdrop:IsOpen() or SpecMenu_EnchantPreset_Dewdrop:IsOpen() or SpecMenu_Dewdrop:IsOpen() then
         SpecMenu_OptionsMenu_Dewdrop:Close();
-        SpecMenu_OptionsMenu_Dewdrop:Unregister(SpecMenuFrame_Menu);
         SpecMenu_EnchantPreset_Dewdrop:Close();
-        SpecMenu_EnchantPreset_Dewdrop:Unregister(SpecMenuFrame_Menu);
         SpecMenu_Dewdrop:Close();
-        SpecMenu_Dewdrop:Unregister(SpecMenuFrame_Menu);
     else
         if (arg1=="LeftButton") then
             SpecMenu_DewdropRegister();
@@ -205,7 +203,6 @@ function SpecMenuFrame_OnClickLOCK()
         SPM.FrameLocked = true;
     end
     SpecMenu_OptionsMenu_Dewdrop:Close()
-    SpecMenu_OptionsMenu_Dewdrop:Unregister(SpecMenuFrame_Menu);
 end
 
 function SpecMenuFrame_OnClick_MoveFrame()
