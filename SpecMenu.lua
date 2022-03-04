@@ -9,7 +9,6 @@ SpecMenu_OptionsMenu_Dewdrop = AceLibrary("Dewdrop-2.0");
 local DefaultSpecMenuDB  = {
 	["Specs"] = {},
     ["EnchantPresets"] = {},
-    ["ActiveSpec"] = {1, 1},
 };
 
 local function SpecMenu_PopulateSpecDB()
@@ -43,7 +42,7 @@ end
 
 
 local function SpecMenu_DewdropClick(specSpell ,specNum)
-    if specNum ~= SpecMenuDB["ActiveSpec"][1] then
+    if specNum ~= SpecMenu_SpecId() then
         if IsMounted() then Dismount() end
         CA_ActivateSpec(specNum);
     else
@@ -96,8 +95,12 @@ local function SpecMenu_EnchantPreset_DewdropClick(presetNum)
 	end
 end
 
+function SpecMenu_SpecId()
+    return CA_GetActiveSpecId() +1
+end
+
 function SpecChecked(k)
-    if k == SpecMenuDB["ActiveSpec"][1] then return true end
+    if k == SpecMenu_SpecId() then return true end
 end
 
 function PresetChecked(k)
@@ -137,31 +140,17 @@ end
 function SpecMenuQuickSwap_OnClick()
     SpecMenu_Dewdrop:Close();
         if (arg1=="LeftButton") then
-            SpecMenu_currentspecNum =  SpecMenuDB["Specs"][SpecMenuDB["ActiveSpec"][1]][2]
+            SpecMenu_currentspecNum =  SpecMenuDB["Specs"][SpecMenu_SpecId()][2]
         elseif (arg1=="RightButton") then
-            SpecMenu_currentspecNum =  SpecMenuDB["Specs"][SpecMenuDB["ActiveSpec"][1]][3]
+            SpecMenu_currentspecNum =  SpecMenuDB["Specs"][SpecMenu_SpecId()][3]
         end
-
-        if SpecMenu_currentspecNum ~= SpecMenuDB["ActiveSpec"][1] then
-            if IsMounted() then Dismount(); end
-                CA_ActivateSpec(SpecMenu_currentspecNum);
-        else
-            print("Spec is already active")
+        
+        if IsMounted() then Dismount(); end
+        CA_ActivateSpec(SpecMenu_currentspecNum);
+        
+        if InterfaceOptionsFrame:IsVisible() then
+            SpecMenuOptions_OpenOptions();
         end
-end
-
-function SpecMenuSetCurrent(event, unit, spellName, spellRank)
-    if spellName:find("Specialization") then
-        for k,v in pairs(SpecMenu_SpecInfo) do
-            if spellName:find(SpecMenu_SpecInfo[k][3]) then
-                SpecMenu_currentspecNum = SpecMenu_SpecInfo[k][2];
-                SpecMenuDB["ActiveSpec"][1] = SpecMenu_currentspecNum;
-            end
-        end
-    end
-    if InterfaceOptionsFrame:IsVisible() then
-        SpecMenuOptions_OpenOptions();
-	end
 end
 
 function SpecMenu_OnClick(arg1)
@@ -244,8 +233,6 @@ function SpecMenuFrame_OnLoad()
     this:RegisterForDrag("LeftButton");
     SpecMenuFrame_Menu:SetText("Spec|Enchant");
     SpecMenuFrame_QuickSwap:SetText("QuickSwap");
-    addon:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenuSetCurrent);
-
 end
 
 function TooltipLoad()
