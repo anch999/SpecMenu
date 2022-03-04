@@ -25,7 +25,6 @@ local function SpecMenu_PopulateSpecDB()
     end
 end
 
-
 local function SpecMenu_PopulatePresetDB()
 
     for k,v in pairs(SpecMenu_PresetSpellIDs) do
@@ -39,7 +38,6 @@ local function SpecMenu_PopulatePresetDB()
         end
     end
 end
-
 
 local function SpecMenu_DewdropClick(specSpell ,specNum)
     if specNum ~= SpecMenu_SpecId() then
@@ -99,12 +97,16 @@ function SpecMenu_SpecId()
     return CA_GetActiveSpecId() +1
 end
 
+function SpecMenu_PresetId()
+    return GetREPreset() +1
+end
+
 function SpecChecked(k)
     if k == SpecMenu_SpecId() then return true end
 end
 
 function PresetChecked(k)
-    if k == (GetREPreset() +1) then return true end
+    if k == SpecMenu_PresetId() then return true end
 end
 
 local function SpecMenu_EnchantPreset_DewdropRegister()    
