@@ -39,7 +39,7 @@ local function SpecMenu_PopulatePresetDB()
     end
 end
 
-local function SpecMenu_DewdropClick(specSpell ,specNum)
+local function SpecMenu_DewdropClick(specSpell ,specNum)    
     if specNum ~= SpecMenu_SpecId() then
         if IsMounted() then Dismount() end
         CA_ActivateSpec(specNum);
@@ -47,7 +47,6 @@ local function SpecMenu_DewdropClick(specSpell ,specNum)
         print("Spec is already active")
     end
     SpecMenu_Dewdrop:Close();
-    SpecMenu_currentspecNum = specNum;
     if InterfaceOptionsFrame:IsVisible() then
         SpecMenuOptions_OpenOptions();
 	end
@@ -101,12 +100,12 @@ function SpecMenu_PresetId()
     return GetREPreset() +1
 end
 
-function SpecChecked(k)
-    if k == SpecMenu_SpecId() then return true end
+function SpecChecked(specNum)
+    if specNum == SpecMenu_SpecId() then return true end
 end
 
-function PresetChecked(k)
-    if k == SpecMenu_PresetId() then return true end
+function PresetChecked(presetNum)
+    if presetNum == SpecMenu_PresetId() then return true end
 end
 
 local function SpecMenu_EnchantPreset_DewdropRegister()    
@@ -140,18 +139,22 @@ local function SpecMenu_EnchantPreset_DewdropRegister()
 end
 
 function SpecMenuQuickSwap_OnClick()
+    local specNum;
     SpecMenu_Dewdrop:Close();
         if (arg1=="LeftButton") then
-            SpecMenu_currentspecNum =  SpecMenuDB["Specs"][SpecMenu_SpecId()][2]
+            specNum =  SpecMenuDB["Specs"][SpecMenu_SpecId()][2]
         elseif (arg1=="RightButton") then
-            SpecMenu_currentspecNum =  SpecMenuDB["Specs"][SpecMenu_SpecId()][3]
+            specNum =  SpecMenuDB["Specs"][SpecMenu_SpecId()][3]
         end
-        
-        if IsMounted() then Dismount(); end
-        CA_ActivateSpec(SpecMenu_currentspecNum);
-        
-        if InterfaceOptionsFrame:IsVisible() then
-            SpecMenuOptions_OpenOptions();
+        if specNum ~= SpecMenu_SpecId() then
+            if IsMounted() then Dismount(); end
+            CA_ActivateSpec(specNum);
+            
+            if InterfaceOptionsFrame:IsVisible() then
+                SpecMenuOptions_OpenOptions();
+            end
+        else
+            print("Spec is already active")
         end
 end
 

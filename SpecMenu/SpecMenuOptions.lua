@@ -54,7 +54,7 @@ function SpecMenuOptions_Menu_OnClick()
 end
 
 function SpecMenuOptionsCreateFrame_Initialize()
-		
+	
 	local editbox1 = CreateFrame("EditBox", "SpecMenuOptions_NameEdit", SpecMenuOptionsFrame, "InputBoxTemplate");
     editbox1:SetWidth(160);
     editbox1:SetHeight(24);
@@ -64,12 +64,24 @@ function SpecMenuOptionsCreateFrame_Initialize()
 
 	local specmenu = CreateFrame("Button", "SpecMenuOptions_Menu", SpecMenuOptionsFrame, "UIDropDownMenuTemplate");
     specmenu:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 15, -60);
+	specmenu.Lable = specmenu:CreateFontString(nil , "BORDER", "GameFontNormal")
+	specmenu.Lable:SetJustifyH("RIGHT")
+	specmenu.Lable:SetPoint("TOPLEFT", specmenu, "TOPLEFT", 20, 20)
+	specmenu.Lable:SetText("Select Spec To Edit")
 
 	local quickswap1 = CreateFrame("Button", "SpecMenuOptions_QuickSwap1", SpecMenuOptionsFrame, "UIDropDownMenuTemplate");
     quickswap1:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 190, -60);
+	quickswap1.Lable = quickswap1:CreateFontString(nil , "BORDER", "GameFontNormal")
+	quickswap1.Lable:SetJustifyH("RIGHT")
+	quickswap1.Lable:SetPoint("TOPLEFT", quickswap1, "TOPLEFT", 20, 20)
+	quickswap1.Lable:SetText("QuickSwap Left Click")
 
 	local quickswap2 = CreateFrame("Button", "SpecMenuOptions_QuickSwap2", SpecMenuOptionsFrame, "UIDropDownMenuTemplate");
     quickswap2:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 190, -89);
+	quickswap2.Lable = quickswap2:CreateFontString(nil , "BORDER", "GameFontNormal")
+	quickswap2.Lable:SetJustifyH("RIGHT")
+	quickswap2.Lable:SetPoint("BOTTOMLEFT", quickswap2, "BOTTOMLEFT", 20, -20)
+	quickswap2.Lable:SetText("QuickSwap Right Click")
 
 	local updateinfo = CreateFrame("Button", "SpecMenuOptions_UpdateDB", SpecMenuOptionsFrame, "OptionsButtonTemplate");
     updateinfo:SetWidth(160);
@@ -82,18 +94,22 @@ function SpecMenuOptionsCreateFrame_Initialize()
     updateinfo2:SetWidth(160);
     updateinfo2:SetHeight(50);
 	updateinfo2:SetText("Update Enchant Preset");
-    updateinfo2:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 380, -160);
+    updateinfo2:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 380, -180);
 	updateinfo2:SetScript("OnClick", SpecMenuOptions_UpatePresetDB_OnClick);
 
 	local editbox2 = CreateFrame("EditBox", "SpecMenuOptions_PresetNameEdit", SpecMenuOptionsFrame, "InputBoxTemplate");
     editbox2:SetWidth(160);
     editbox2:SetHeight(24);
-    editbox2:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 39, -189);
+    editbox2:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 39, -209);
     editbox2:SetAutoFocus(false);
     editbox2:SetMaxLetters(30);
 
 	local presetmenu = CreateFrame("Button", "SpecMenuOptions_PresetMenu", SpecMenuOptionsFrame, "UIDropDownMenuTemplate");
-    presetmenu:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 15, -160);
+    presetmenu:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 15, -180);
+	presetmenu.Lable = presetmenu:CreateFontString(nil , "BORDER", "GameFontNormal")
+	presetmenu.Lable:SetJustifyH("RIGHT")
+	presetmenu.Lable:SetPoint("TOPLEFT", presetmenu, "TOPLEFT", 20, 20)
+	presetmenu.Lable:SetText("Select Enchant Preset To Edit")
 
 	SpecMenu_DropDownInitialize();
 
