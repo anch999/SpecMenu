@@ -7,7 +7,17 @@ SpecMenu_EnchantPreset_Dewdrop = AceLibrary("Dewdrop-2.0");
 SpecMenu_OptionsMenu_Dewdrop = AceLibrary("Dewdrop-2.0");
 
 local DefaultSpecMenuDB  = {
-	["Specs"] = {},
+	["Specs"] = {
+        {
+        "Default Spec", -- [1]
+        1, -- [2]
+        1, -- [3]
+    },
+},
+    ["ActiveSpec"] = {
+    1, -- [1]
+    1, -- [2]
+},
     ["EnchantPresets"] = {},
 };
 
@@ -219,6 +229,8 @@ function SpecMenuFrame_OnEvent()
     if ( SpecMenuDB == nil ) then
         SpecMenuDB = CloneTable(DefaultSpecMenuDB);
     end
+    SpecMenuOptionsCreateFrame_Initialize();
+	SpecMenuOptions_OpenOptions();
 end
 
 function CloneTable(t)				-- return a copy of the table t

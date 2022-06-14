@@ -15,6 +15,9 @@
 <Script file="Libs\LibDataBroker-1.1.lua"/>
 <Script file="libs\LibPeriodicTable-3.1\LibPeriodicTable-3.1.lua"/>
 
+<Include file="Libs\DewdropLib\embeds.xml"/>
+<Script file="Libs\DewdropLib\Dewdrop-2.0\Dewdrop-2.0.lua"/>
+
 <Script file="PreSetIDS.lua"/>
 <Script file="SpecMenu.lua"/>
 <Script file="SpecMenuOptions.lua"/>

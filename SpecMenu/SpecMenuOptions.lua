@@ -55,6 +55,8 @@ end
 
 function SpecMenuOptionsCreateFrame_Initialize()
 	
+	InterfaceOptionsFrame:SetWidth(850)
+
 	local editbox1 = CreateFrame("EditBox", "SpecMenuOptions_NameEdit", SpecMenuOptionsFrame, "InputBoxTemplate");
     editbox1:SetWidth(160);
     editbox1:SetHeight(24);
@@ -154,6 +156,7 @@ end
 function SpecMenuOptions_UpatePresetDB_OnClick()
 	SpecMenuDB["EnchantPresets"][SpecMenuOptions_PresetSet] = SpecMenuOptions_PresetNameEdit:GetText();
 	UIDropDownMenu_SetText(SpecMenuOptions_PresetMenu, SpecMenuDB["EnchantPresets"][SpecMenuOptions_PresetSet]);
+	AscensionUI_CDB["EnchantManager"]["presets"][SpecMenuOptions_PresetSet]["name"] = SpecMenuOptions_PresetNameEdit:GetText();
 end
 
 function SpecMenuOptions_UpateDB_OnClick()
@@ -161,6 +164,7 @@ function SpecMenuOptions_UpateDB_OnClick()
 	SpecMenuDB["Specs"][SpMenuSpecNum][2] = SpecMenu_QuickswapNum1;
 	SpecMenuDB["Specs"][SpMenuSpecNum][3] = SpecMenu_QuickswapNum2;
 	UIDropDownMenu_SetText(SpecMenuOptions_Menu, SpecMenuDB["Specs"][SpMenuSpecNum][1]);
+	AscensionUI_CDB["CA2"]["SpecNamesCustom"][SpMenuSpecNum] = SpecMenuOptions_NameEdit:GetText();
 end
 
 function SpecMenuOptions_QuickSwap1_Initialize()
