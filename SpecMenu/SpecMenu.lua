@@ -1,25 +1,40 @@
 local SpecMenu, SPM = ...
-local addonName = "SpecMenu"
+local addonName = "SpecMenu";
 _G[addonName] = LibStub("AceAddon-3.0"):NewAddon(addonName, "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceSerializer-3.0")
-local addon = _G[addonName] 
+local addon = _G[addonName];
+local lastActiveSpec;
+local nextSpec;
 SpecMenu_Dewdrop = AceLibrary("Dewdrop-2.0");
 SpecMenu_EnchantPreset_Dewdrop = AceLibrary("Dewdrop-2.0");
 SpecMenu_OptionsMenu_Dewdrop = AceLibrary("Dewdrop-2.0");
 
 local DefaultSpecMenuDB  = {
-	["Specs"] = {
-        {
-        "Default Spec", -- [1]
-        1, -- [2]
-        1, -- [3]
-    },
-},
+	["Specs"] = {},
     ["ActiveSpec"] = {
     1, -- [1]
     1, -- [2]
 },
     ["EnchantPresets"] = {},
+    ["LastSpec"] = {1,},
+    ["EditAscenSpec"] = {},
+    ["EditAscenPreset"] = {},
 };
+
+local function SpecMenu_SpecId()
+    return CA_GetActiveSpecId() +1
+end
+
+local function SpecMenu_PresetId()
+    return GetREPreset() +1
+end
+
+local function SpecChecked(specNum)
+    if specNum == SpecMenu_SpecId() then return true end
+end
+
+local function PresetChecked(presetNum)
+    if presetNum == SpecMenu_PresetId() then return true end
+end
 
 local function SpecMenu_PopulateSpecDB()
     
@@ -49,9 +64,19 @@ local function SpecMenu_PopulatePresetDB()
     end
 end
 
-local function SpecMenu_DewdropClick(specSpell ,specNum)    
+local function SpecMenu_LastSpec()
+    if lastActiveSpec ~= nextSpec then
+        SpecMenuDB["LastSpec"] = lastActiveSpec;
+    end
+    addon:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED");
+end
+
+local function SpecMenu_DewdropClick(specSpell ,specNum)
     if specNum ~= SpecMenu_SpecId() then
         if IsMounted() then Dismount() end
+        lastActiveSpec = SpecMenu_SpecId();
+        nextSpec = specNum;
+        addon:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenu_LastSpec);
         CA_ActivateSpec(specNum);
     else
         print("Spec is already active")
@@ -61,6 +86,8 @@ local function SpecMenu_DewdropClick(specSpell ,specNum)
         SpecMenuOptions_OpenOptions();
 	end
 end
+
+
 
 local function SpecMenu_DewdropRegister()
     SpecMenu_PopulateSpecDB();
@@ -102,22 +129,6 @@ local function SpecMenu_EnchantPreset_DewdropClick(presetNum)
 	end
 end
 
-function SpecMenu_SpecId()
-    return CA_GetActiveSpecId() +1
-end
-
-function SpecMenu_PresetId()
-    return GetREPreset() +1
-end
-
-function SpecChecked(specNum)
-    if specNum == SpecMenu_SpecId() then return true end
-end
-
-function PresetChecked(presetNum)
-    if presetNum == SpecMenu_PresetId() then return true end
-end
-
 local function SpecMenu_EnchantPreset_DewdropRegister()    
     SpecMenu_PopulatePresetDB();
     SpecMenu_EnchantPreset_Dewdrop:Register(SpecMenuFrame_Menu,
@@ -152,12 +163,23 @@ function SpecMenuQuickSwap_OnClick()
     local specNum;
     SpecMenu_Dewdrop:Close();
         if (arg1=="LeftButton") then
-            specNum =  SpecMenuDB["Specs"][SpecMenu_SpecId()][2]
+            if SpecMenuDB["Specs"][SpecMenu_SpecId()][2] == "LastSpec" then
+                specNum = SpecMenuDB["LastSpec"];
+            else
+                specNum =  SpecMenuDB["Specs"][SpecMenu_SpecId()][2]
+            end
         elseif (arg1=="RightButton") then
+            if SpecMenuDB["Specs"][SpecMenu_SpecId()][3] == "LastSpec" then
+                specNum = SpecMenuDB["LastSpec"];
+            else
             specNum =  SpecMenuDB["Specs"][SpecMenu_SpecId()][3]
+            end
         end
         if specNum ~= SpecMenu_SpecId() then
             if IsMounted() then Dismount(); end
+            lastActiveSpec = SpecMenu_SpecId();
+            nextSpec = specNum;
+            addon:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenu_LastSpec);
             CA_ActivateSpec(specNum);
             
             if InterfaceOptionsFrame:IsVisible() then
@@ -225,15 +247,7 @@ function SpecMenuFrame_OnClick_StopMoveFrame()
     this.isMoving = false;
 end
 
-function SpecMenuFrame_OnEvent()
-    if ( SpecMenuDB == nil ) then
-        SpecMenuDB = CloneTable(DefaultSpecMenuDB);
-    end
-    SpecMenuOptionsCreateFrame_Initialize();
-	SpecMenuOptions_OpenOptions();
-end
-
-function CloneTable(t)				-- return a copy of the table t
+local function CloneTable(t)				-- return a copy of the table t
 	local new = {};					-- create a new table
 	local i, v = next(t, nil);		-- i is an index of t, v = t[i]
 	while i do
@@ -246,6 +260,17 @@ function CloneTable(t)				-- return a copy of the table t
 	return new;
 end
 
+function SpecMenuFrame_OnEvent()
+    if ( SpecMenuDB == nil ) then
+        SpecMenuDB = CloneTable(DefaultSpecMenuDB);
+    end
+    SpecMenuOptionsCreateFrame_Initialize();
+	SpecMenuOptions_OpenOptions();
+    lastActiveSpec = SpecMenuDB["LastSpec"];
+end
+
+
+
 function SpecMenuFrame_OnLoad()
     this:RegisterForDrag("LeftButton");
     SpecMenuFrame_Menu:SetText("Spec|Enchant");
@@ -254,5 +279,4 @@ end
 
 function TooltipLoad()
     GameTooltip:SetOwner(SpecMenuFrame_QuickSwap, "ANCHOR_RIGHT");
-	GameTooltip:SetGuildBankItem(GetCurrentGuildBankTab(), self:GetID());
 end
