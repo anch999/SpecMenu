@@ -21,7 +21,5 @@
 <Script file="PreSetIDS.lua"/>
 <Script file="SpecMenu.lua"/>
 <Script file="SpecMenuOptions.lua"/>
-<Include file="SpecMenu.xml"/>
-<Include file="SpecMenuOptions.xml"/>
 
 </Ui>

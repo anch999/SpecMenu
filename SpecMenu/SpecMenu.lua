@@ -8,6 +8,51 @@ SpecMenu_Dewdrop = AceLibrary("Dewdrop-2.0");
 SpecMenu_EnchantPreset_Dewdrop = AceLibrary("Dewdrop-2.0");
 SpecMenu_OptionsMenu_Dewdrop = AceLibrary("Dewdrop-2.0");
 
+--Creates the main interface
+local function SpecMenu_CreateFrame()
+	local mainframe = CreateFrame("FRAME", "SpecMenuFrame", UIParent, nil);
+    mainframe:SetPoint("CENTER",0,0);
+    mainframe:SetSize(120,90);
+    mainframe:EnableMouse(true);
+    mainframe:SetMovable(true);
+    mainframe:SetBackdrop({
+        bgFile = "Interface/DialogFrame/UI-DialogBox-Background",
+        edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+        tile = "true",
+        insets = {left = "11", right = "12", top = "12", bottom = "11"},
+        edgeSize = 32,
+        titleSize = 32,
+    });
+    mainframe:RegisterForDrag("LeftButton");
+    mainframe:SetScript("OnDragStart", function(self) SpecMenuFrame_OnClick_MoveFrame() end)
+    mainframe:SetScript("OnDragStop", function(self) SpecMenuFrame_OnClick_StopMoveFrame() end)
+    mainframe:RegisterEvent("ADDON_LOADED")
+    mainframe:SetScript("OnEvent", function(self, event, addonName)
+        if addonName ~= "SpecMenu" then
+            return
+        else
+            SpecMenuFrame_OnLoad();
+        end
+        self:UnregisterEvent("ADDON_LOADED");
+        self:SetScript("OnEvent", nil);
+    end);
+	local specbutton = CreateFrame("Button", "SpecMenuFrame_Menu", SpecMenuFrame, "OptionsButtonTemplate");
+    specbutton:SetSize(100,30);
+    specbutton:SetPoint("BOTTOM", SpecMenuFrame, "BOTTOM", 0, 14);
+    specbutton:SetText("Spec|Enchant");
+    specbutton:RegisterForClicks("LeftButtonDown", "RightButtonDown");
+    specbutton:SetScript("OnClick", function(self, btnclick, down) SpecMenu_OnClick(btnclick) end);
+
+    local quickswapbutton = CreateFrame("Button", "SpecMenuFrame_QuickSwap", SpecMenuFrame, "OptionsButtonTemplate");
+    quickswapbutton:SetSize(100,30);
+    quickswapbutton:SetPoint("TOP", SpecMenuFrame, "TOP", 0, -14);
+    quickswapbutton:SetText("QuickSwap");
+    quickswapbutton:RegisterForClicks("LeftButtonDown", "RightButtonDown");
+    quickswapbutton:SetScript("OnClick", function(self, btnclick, down) SpecMenuQuickSwap_OnClick(btnclick) end);
+end
+SpecMenu_CreateFrame();
+
+--Set Savedvariables defaults
 local DefaultSpecMenuDB  = {
 	["Specs"] = {},
     ["ActiveSpec"] = {
@@ -20,13 +65,16 @@ local DefaultSpecMenuDB  = {
     ["EditAscenPreset"] = {},
 };
 
+--returns current active spec
 local function SpecMenu_SpecId()
     return CA_GetActiveSpecId() +1
 end
 
+--returns current active enchant preset 
 local function SpecMenu_PresetId()
     return GetREPreset() +1
 end
+
 
 local function SpecChecked(specNum)
     if specNum == SpecMenu_SpecId() then return true end
@@ -36,6 +84,7 @@ local function PresetChecked(presetNum)
     if presetNum == SpecMenu_PresetId() then return true end
 end
 
+--loads the table of specs by checking if you know the spell for the spec that is associated with it
 local function SpecMenu_PopulateSpecDB()
     
     for k,v in pairs(SpecMenu_SpecInfo) do
@@ -50,6 +99,7 @@ local function SpecMenu_PopulateSpecDB()
     end
 end
 
+--loads the table of enchant presets by checking if you know the spell for the preset that is associated with it
 local function SpecMenu_PopulatePresetDB()
 
     for k,v in pairs(SpecMenu_PresetSpellIDs) do
@@ -64,7 +114,10 @@ local function SpecMenu_PopulatePresetDB()
     end
 end
 
-local function SpecMenu_LastSpec()
+--[[ checks to see if current spec is not last spec.
+Done this way to stop it messing up last spec if you stop the cast mid way
+ ]]
+ local function SpecMenu_LastSpec()
     if lastActiveSpec ~= nextSpec then
         SpecMenuDB["LastSpec"] = lastActiveSpec;
     end
@@ -74,21 +127,19 @@ end
 local function SpecMenu_DewdropClick(specSpell ,specNum)
     if specNum ~= SpecMenu_SpecId() then
         if IsMounted() then Dismount() end
+        --used for the last spec quickswap selection
         lastActiveSpec = SpecMenu_SpecId();
         nextSpec = specNum;
         addon:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenu_LastSpec);
+        --ascension function for loading specs
         CA_ActivateSpec(specNum);
     else
         print("Spec is already active")
     end
     SpecMenu_Dewdrop:Close();
-    if InterfaceOptionsFrame:IsVisible() then
-        SpecMenuOptions_OpenOptions();
-	end
 end
 
-
-
+--sets up the drop down menu for specs
 local function SpecMenu_DewdropRegister()
     SpecMenu_PopulateSpecDB();
     SpecMenu_Dewdrop:Register(SpecMenuFrame_Menu,
@@ -122,14 +173,13 @@ end
 
 local function SpecMenu_EnchantPreset_DewdropClick(presetNum)
         if IsMounted() then Dismount() end
+    --ascension function for changing enchant presets
     RequestChangeRandomEnchantmentPreset(presetNum -1, true);
     SpecMenu_EnchantPreset_Dewdrop:Close();
-    if InterfaceOptionsFrame:IsVisible() then
-        SpecMenuOptions_OpenOptions();
-	end
 end
 
-local function SpecMenu_EnchantPreset_DewdropRegister()    
+--sets up the drop down menu for enchant presets
+local function SpecMenu_EnchantPreset_DewdropRegister()
     SpecMenu_PopulatePresetDB();
     SpecMenu_EnchantPreset_Dewdrop:Register(SpecMenuFrame_Menu,
         'point', function(parent)
@@ -159,7 +209,7 @@ local function SpecMenu_EnchantPreset_DewdropRegister()
 	)
 end
 
-function SpecMenuQuickSwap_OnClick()
+function SpecMenuQuickSwap_OnClick(arg1)
     local specNum;
     SpecMenu_Dewdrop:Close();
         if (arg1=="LeftButton") then
@@ -181,10 +231,6 @@ function SpecMenuQuickSwap_OnClick()
             nextSpec = specNum;
             addon:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenu_LastSpec);
             CA_ActivateSpec(specNum);
-            
-            if InterfaceOptionsFrame:IsVisible() then
-                SpecMenuOptions_OpenOptions();
-            end
         else
             print("Spec is already active")
         end
@@ -260,23 +306,11 @@ local function CloneTable(t)				-- return a copy of the table t
 	return new;
 end
 
-function SpecMenuFrame_OnEvent()
+function SpecMenuFrame_OnLoad()
     if ( SpecMenuDB == nil ) then
         SpecMenuDB = CloneTable(DefaultSpecMenuDB);
     end
     SpecMenuOptionsCreateFrame_Initialize();
-	SpecMenuOptions_OpenOptions();
+    SpecMenuOptions_OpenOptions();
     lastActiveSpec = SpecMenuDB["LastSpec"];
-end
-
-
-
-function SpecMenuFrame_OnLoad()
-    this:RegisterForDrag("LeftButton");
-    SpecMenuFrame_Menu:SetText("Spec|Enchant");
-    SpecMenuFrame_QuickSwap:SetText("QuickSwap");
-end
-
-function TooltipLoad()
-    GameTooltip:SetOwner(SpecMenuFrame_QuickSwap, "ANCHOR_RIGHT");
 end
