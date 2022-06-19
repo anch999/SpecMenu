@@ -2,16 +2,6 @@ local specmenu_options_swap = "Last Active Spec";
 local quickSwapNum = "";
 local lastSpecPos
 
-local function SpecMenuOptions_CreateFrame()
-	local mainframe = CreateFrame("FRAME", "SpecMenuOptionsFrame", InterfaceOptionsFrame, nil);
-    --mainframe:Hide();
-    local fstring = mainframe:CreateFontString(mainframe, "OVERLAY", "GameFontNormal");
-	fstring:SetText("Spec Menu Settings");
-	fstring:SetPoint("TOPLEFT", 15, -15)
-	mainframe.name = "SpecMenu";
-	InterfaceOptions_AddCategory(mainframe);
-end
-
 function SpecMenuOptions_Toggle()
     if InterfaceOptionsFrame:IsVisible() then
 		InterfaceOptionsFrame:Hide();
@@ -180,7 +170,7 @@ local function SpecMenuOptions_UpatePresetDB_OnClick()
 	--Updates the name of the Enchant Preset selected
 	SpecMenuDB["EnchantPresets"][SpecMenuOptions_PresetSet] = SpecMenuOptions_PresetNameEdit:GetText();
 	UIDropDownMenu_SetText(SpecMenuOptions_PresetMenu, SpecMenuDB["EnchantPresets"][SpecMenuOptions_PresetSet]);
-	--Overrights the ascension Enchant Preset names if checkbox is selected
+	--Overwrites   the ascension Enchant Preset names if checkbox is selected
 	if SpecMenuDB["EditAscenPreset"] then
 		if AscensionUI_CDB["EnchantManager"]["presets"][SpecMenuOptions_PresetSet].name then
 			AscensionUI_CDB["EnchantManager"]["presets"][SpecMenuOptions_PresetSet].name = SpecMenuOptions_PresetNameEdit:GetText();
@@ -199,7 +189,7 @@ local function SpecMenuOptions_UpateDB_OnClick()
 	--Updates the name of the Spec selected
 	SpecMenuDB["Specs"][SpMenuSpecNum][1] = SpecMenuOptions_NameEdit:GetText();
 	UIDropDownMenu_SetText(SpecMenuOptions_Menu, SpecMenuDB["Specs"][SpMenuSpecNum][1]);
-	--Overrights the ascension Spec names if checkbox is selected
+	--Overwrites the ascension Spec names if checkbox is selected
 	if SpecMenuDB["EditAscenSpec"] then
 		AscensionUI_CDB["CA2"]["SpecNamesCustom"][SpMenuSpecNum] = SpecMenuOptions_NameEdit:GetText();
 			--If there is no icon selected it will update it to the default otherwise the updated names wont show
@@ -210,10 +200,8 @@ local function SpecMenuOptions_UpateDB_OnClick()
 
 end
 
-
-
 function SpecMenuOptions_OpenOptions()
-	local menuID = SpecMenuDB["ActiveSpec"][1];
+	local menuID = SpecMenu_SpecId();
 	UIDropDownMenu_SetSelectedID(SpecMenuOptions_Menu, menuID);
 	UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap1, SpecMenuDB["Specs"][menuID][2]);
 	UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap2, SpecMenuDB["Specs"][menuID][3]);
@@ -233,7 +221,7 @@ function SpecMenuOptions_OpenOptions()
 	SpecMenu_QuickswapNum1 = SpecMenuDB["Specs"][menuID][2];
 	SpecMenu_QuickswapNum2 = SpecMenuDB["Specs"][menuID][3];
 
-	local presetID = SpecMenuDB["ActiveSpec"][2];
+	local presetID = SpecMenu_PresetId();
 	UIDropDownMenu_SetSelectedID(SpecMenuOptions_PresetMenu, presetID);
 	UIDropDownMenu_SetText(SpecMenuOptions_PresetMenu, SpecMenuDB["EnchantPresets"][presetID]);
 	if SpecMenuDB["EnchantPresets"][presetID] ~= nil then
@@ -244,8 +232,14 @@ function SpecMenuOptions_OpenOptions()
 	SpecMenuOptions_PresetNameEditCheck:SetChecked(SpecMenuDB["EditAscenPreset"])
 end
 
-function SpecMenuOptionsCreateFrame_Initialize()
-	SpecMenuOptions_CreateFrame();
+--Creates the options frame and all its assets
+function SpecMenuOptions_CreateFrame()
+	local mainframe = CreateFrame("FRAME", "SpecMenuOptionsFrame", InterfaceOptionsFrame, nil);
+    local fstring = mainframe:CreateFontString(mainframe, "OVERLAY", "GameFontNormal");
+	fstring:SetText("Spec Menu Settings");
+	fstring:SetPoint("TOPLEFT", 15, -15)
+	mainframe.name = "SpecMenu";
+	InterfaceOptions_AddCategory(mainframe);
 	InterfaceOptionsFrame:SetWidth(850)
 
 	local editbox1 = CreateFrame("EditBox", "SpecMenuOptions_NameEdit", SpecMenuOptionsFrame, "InputBoxTemplate");
@@ -255,7 +249,6 @@ function SpecMenuOptionsCreateFrame_Initialize()
     editbox1:SetAutoFocus(false);
     editbox1:SetMaxLetters(30);
 	editbox1:SetScript("OnTextChanged", SpecMenuOptions_UpateDB_OnClick);
-
 
 	local specmenu = CreateFrame("Button", "SpecMenuOptions_Menu", SpecMenuOptionsFrame, "UIDropDownMenuTemplate");
     specmenu:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 15, -60);
@@ -301,7 +294,7 @@ function SpecMenuOptionsCreateFrame_Initialize()
 	updateAscenUI1:SetScript("OnClick", SpecMenuOptions_NameEditCheckToggle);
 	updateAscenUI1:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-		GameTooltip:SetText("Overright Ascension Spec Names")
+		GameTooltip:SetText("Overwrites Ascension Spec Names")
 		GameTooltip:Show()
 	end)
 	updateAscenUI1:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -313,7 +306,7 @@ function SpecMenuOptionsCreateFrame_Initialize()
 	updateAscenUI2:SetScript("OnClick", SpecMenuOptions_PresetNameEditCheckToggle);
 	updateAscenUI2:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-		GameTooltip:SetText("Overright Ascension Preset Names")
+		GameTooltip:SetText("Overwrites Ascension Preset Names")
 		GameTooltip:Show()
 	end)
 	updateAscenUI2:SetScript("OnLeave", function() GameTooltip:Hide() end)
