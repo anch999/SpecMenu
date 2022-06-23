@@ -187,6 +187,7 @@ end
 
 local function SpecMenuOptions_UpateDB_OnClick()
 	--Updates the name of the Spec selected
+	if SpecMenu_EnableMenu() then
 	SpecMenuDB["Specs"][SpMenuSpecNum][1] = SpecMenuOptions_NameEdit:GetText();
 	UIDropDownMenu_SetText(SpecMenuOptions_Menu, SpecMenuDB["Specs"][SpMenuSpecNum][1]);
 	--Overwrites the ascension Spec names if checkbox is selected
@@ -197,39 +198,45 @@ local function SpecMenuOptions_UpateDB_OnClick()
 				AscensionUI_CDB["CA2"]["SpecIconsCustom"][SpMenuSpecNum] = "Interface\\Icons\\inv_misc_book_16";
 			end
 	end
+	end
 
 end
 
-function SpecMenuOptions_OpenOptions()
+local function SpecMenuOptions_SpecSetup()
 	local menuID = SpecMenu_SpecId();
-	UIDropDownMenu_SetSelectedID(SpecMenuOptions_Menu, menuID);
-	UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap1, SpecMenuDB["Specs"][menuID][2]);
-	UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap2, SpecMenuDB["Specs"][menuID][3]);
-	SpecMenuOptions_NameEdit:SetText(SpecMenuDB["Specs"][menuID][1])
-	if SpecMenuDB["Specs"][menuID][2] == "LastSpec" then
-		UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap1, specmenu_options_swap);
-	else
-		UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap1, SpecMenuDB["Specs"][SpecMenuDB["Specs"][menuID][2]][1]);
-	end
-	if SpecMenuDB["Specs"][menuID][3] == "LastSpec" then
-		UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap2, specmenu_options_swap);
-	else
-		UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap2, SpecMenuDB["Specs"][SpecMenuDB["Specs"][menuID][3]][1]);
-	end
-	UIDropDownMenu_SetText(SpecMenuOptions_Menu, SpecMenuDB["Specs"][menuID][1]);
-	SpMenuSpecNum = menuID;
-	SpecMenu_QuickswapNum1 = SpecMenuDB["Specs"][menuID][2];
-	SpecMenu_QuickswapNum2 = SpecMenuDB["Specs"][menuID][3];
+			UIDropDownMenu_SetSelectedID(SpecMenuOptions_Menu, menuID);
+			UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap1, SpecMenuDB["Specs"][menuID][2]);
+			UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap2, SpecMenuDB["Specs"][menuID][3]);
+			SpecMenuOptions_NameEdit:SetText(SpecMenuDB["Specs"][menuID][1])
+		if SpecMenuDB["Specs"][menuID][2] == "LastSpec" then
+			UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap1, specmenu_options_swap);
+		else
+			UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap1, SpecMenuDB["Specs"][SpecMenuDB["Specs"][menuID][2]][1] or "You don't have more then 1 spec");
+		end
+		if SpecMenuDB["Specs"][menuID][3] == "LastSpec" then
+			UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap2, specmenu_options_swap);
+		else
+			UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap2, SpecMenuDB["Specs"][SpecMenuDB["Specs"][menuID][3]][1]);
+		end
+			UIDropDownMenu_SetText(SpecMenuOptions_Menu, SpecMenuDB["Specs"][menuID][1]);
+			SpMenuSpecNum = menuID;
+			SpecMenu_QuickswapNum1 = SpecMenuDB["Specs"][menuID][2];
+			SpecMenu_QuickswapNum2 = SpecMenuDB["Specs"][menuID][3];
+end
 
-	local presetID = SpecMenu_PresetId();
-	UIDropDownMenu_SetSelectedID(SpecMenuOptions_PresetMenu, presetID);
-	UIDropDownMenu_SetText(SpecMenuOptions_PresetMenu, SpecMenuDB["EnchantPresets"][presetID]);
-	if SpecMenuDB["EnchantPresets"][presetID] ~= nil then
-	SpecMenuOptions_PresetNameEdit:SetText(SpecMenuDB["EnchantPresets"][presetID]);
+function SpecMenuOptions_OpenOptions()
+	if SpecMenu_EnableMenu() then
+		SpecMenuOptions_SpecSetup();
 	end
-	SpecMenuOptions_PresetSet = presetID;
-	SpecMenuOptions_NameEditCheck:SetChecked(SpecMenuDB["EditAscenSpec"])
-	SpecMenuOptions_PresetNameEditCheck:SetChecked(SpecMenuDB["EditAscenPreset"])
+		local presetID = SpecMenu_PresetId();
+		UIDropDownMenu_SetSelectedID(SpecMenuOptions_PresetMenu, presetID);
+		UIDropDownMenu_SetText(SpecMenuOptions_PresetMenu, SpecMenuDB["EnchantPresets"][presetID]);
+		if SpecMenuDB["EnchantPresets"][presetID] ~= nil then
+		SpecMenuOptions_PresetNameEdit:SetText(SpecMenuDB["EnchantPresets"][presetID]);
+		end
+		SpecMenuOptions_PresetSet = presetID;
+		SpecMenuOptions_NameEditCheck:SetChecked(SpecMenuDB["EditAscenSpec"])
+		SpecMenuOptions_PresetNameEditCheck:SetChecked(SpecMenuDB["EditAscenPreset"])
 end
 
 --Creates the options frame and all its assets
@@ -294,7 +301,7 @@ function SpecMenuOptions_CreateFrame()
 	updateAscenUI1:SetScript("OnClick", SpecMenuOptions_NameEditCheckToggle);
 	updateAscenUI1:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-		GameTooltip:SetText("Overwrites Ascension Spec Names")
+		GameTooltip:SetText("Overwrite Ascension Spec Names")
 		GameTooltip:Show()
 	end)
 	updateAscenUI1:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -306,11 +313,12 @@ function SpecMenuOptions_CreateFrame()
 	updateAscenUI2:SetScript("OnClick", SpecMenuOptions_PresetNameEditCheckToggle);
 	updateAscenUI2:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-		GameTooltip:SetText("Overwrites Ascension Preset Names")
+		GameTooltip:SetText("Overwrite Ascension Preset Names")
 		GameTooltip:Show()
 	end)
 	updateAscenUI2:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 	SpecMenu_DropDownInitialize();
+	SpecMenuOptions_OpenOptions();
 end
 

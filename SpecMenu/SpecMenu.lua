@@ -43,7 +43,7 @@ local function SpecMenu_PopulateSpecDB()
                 SpecName = SpecMenuDB["Specs"][k][1];
             else
                 SpecName = "Specialization "..k;
-                SpecMenuDB["Specs"][k] = {SpecName, 1, 2}
+                SpecMenuDB["Specs"][k] = {SpecName, 1, 1}
             end
         end
     end
@@ -158,6 +158,14 @@ local function SpecMenu_EnchantPreset_DewdropRegister()
 	)
 end
 
+function SpecMenu_EnableMenu()
+    if IsSpellKnown(SpecMenu_SpecInfo[1][1]) then
+        return true;
+    else
+        return false;
+    end
+end
+
 function SpecMenuQuickSwap_OnClick(arg1)
     local specNum;
     SpecMenu_Dewdrop:Close();
@@ -261,6 +269,7 @@ local function SpecMenuFrame_OnLoad()
     SpecMenuOptions_CreateFrame();
     SpecMenuOptions_OpenOptions();
     lastActiveSpec = SpecMenuDB["LastSpec"];
+    if SpecMenu_EnableMenu() then
     SpecMenuFrame_QuickSwap:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_TOP")
 		if SpecMenuDB["Specs"][SpecMenu_SpecId()][2] == "LastSpec" then
@@ -276,6 +285,7 @@ local function SpecMenuFrame_OnLoad()
 		GameTooltip:Show()
 	end)
     SpecMenuFrame_QuickSwap:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    end
 end
 
 --Creates the main interface
