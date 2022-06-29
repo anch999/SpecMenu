@@ -12,7 +12,7 @@ SpecMenu_OptionsMenu_Dewdrop = AceLibrary("Dewdrop-2.0");
 local DefaultSpecMenuDB  = {
 	["Specs"] = {},
     ["EnchantPresets"] = {},
-    ["LastSpec"] = {1,},
+    ["LastSpec"] = {1},
     ["EditAscenSpec"] = {},
     ["EditAscenPreset"] = {},
 };
@@ -159,6 +159,7 @@ local function SpecMenu_EnchantPreset_DewdropRegister()
 end
 
 function SpecMenu_EnableMenu()
+
     if IsSpellKnown(SpecMenu_SpecInfo[1][1]) then
         return true;
     else
@@ -204,10 +205,9 @@ function SpecMenu_OnClick(arg1)
             SpecMenu_Dewdrop:Open(this);
         elseif (arg1=="RightButton") then
             if IsAltKeyDown() then
-                SpecMenuOptions_OpenOptions();
                 SpecMenuOptions_Toggle();
             else
-                SpecMenu_EnchantPreset_DewdropRegister()
+                SpecMenu_EnchantPreset_DewdropRegister();
                 SpecMenu_EnchantPreset_Dewdrop:Open(this);
             end
         end
@@ -262,32 +262,6 @@ local function CloneTable(t)				-- return a copy of the table t
 	return new;
 end
 
-local function SpecMenuFrame_OnLoad()
-    if ( SpecMenuDB == nil ) then
-        SpecMenuDB = CloneTable(DefaultSpecMenuDB);
-    end
-    SpecMenuOptions_CreateFrame();
-    SpecMenuOptions_OpenOptions();
-    lastActiveSpec = SpecMenuDB["LastSpec"];
-    if SpecMenu_EnableMenu() then
-    SpecMenuFrame_QuickSwap:SetScript("OnEnter", function()
-		GameTooltip:SetOwner(this, "ANCHOR_TOP")
-		if SpecMenuDB["Specs"][SpecMenu_SpecId()][2] == "LastSpec" then
-            GameTooltip:AddLine("Last Spec")
-        else
-            GameTooltip:AddLine(SpecMenuDB["Specs"][SpecMenuDB["Specs"][SpecMenu_SpecId()][2]][1])
-        end
-        if SpecMenuDB["Specs"][SpecMenu_SpecId()][3] == "LastSpec" then
-            GameTooltip:AddLine("Last Spec")
-        else
-            GameTooltip:AddLine(SpecMenuDB["Specs"][SpecMenuDB["Specs"][SpecMenu_SpecId()][3]][1])
-        end
-		GameTooltip:Show()
-	end)
-    SpecMenuFrame_QuickSwap:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    end
-end
-
 --Creates the main interface
 local function SpecMenu_CreateFrame()
 	local mainframe = CreateFrame("FRAME", "SpecMenuFrame", UIParent, nil);
@@ -306,16 +280,7 @@ local function SpecMenu_CreateFrame()
     mainframe:RegisterForDrag("LeftButton");
     mainframe:SetScript("OnDragStart", function(self) SpecMenuFrame_OnClick_MoveFrame() end)
     mainframe:SetScript("OnDragStop", function(self) SpecMenuFrame_OnClick_StopMoveFrame() end)
-    mainframe:RegisterEvent("ADDON_LOADED")
-    mainframe:SetScript("OnEvent", function(self, event, addonName)
-        if addonName ~= "SpecMenu" then
-            return
-        else
-            SpecMenuFrame_OnLoad();
-        end
-        self:UnregisterEvent("ADDON_LOADED");
-        self:SetScript("OnEvent", nil);
-    end);
+
 	local specbutton = CreateFrame("Button", "SpecMenuFrame_Menu", SpecMenuFrame, "OptionsButtonTemplate");
     specbutton:SetSize(100,30);
     specbutton:SetPoint("BOTTOM", SpecMenuFrame, "BOTTOM", 0, 14);
@@ -329,5 +294,39 @@ local function SpecMenu_CreateFrame()
     quickswapbutton:SetText("QuickSwap");
     quickswapbutton:RegisterForClicks("LeftButtonDown", "RightButtonDown");
     quickswapbutton:SetScript("OnClick", function(self, btnclick, down) SpecMenuQuickSwap_OnClick(btnclick) end);
+
+    SpecMenuFrame_QuickSwap:SetScript("OnEnter", function()
+		if SpecMenu_EnableMenu() then
+        GameTooltip:SetOwner(this, "ANCHOR_TOP")
+		if SpecMenuDB["Specs"][SpecMenu_SpecId()][2] == "LastSpec" then
+            GameTooltip:AddLine("Last Spec")
+        else
+            GameTooltip:AddLine(SpecMenuDB["Specs"][SpecMenuDB["Specs"][SpecMenu_SpecId()][2]][1])
+        end
+        if SpecMenuDB["Specs"][SpecMenu_SpecId()][3] == "LastSpec" then
+            GameTooltip:AddLine("Last Spec")
+        else
+            GameTooltip:AddLine(SpecMenuDB["Specs"][SpecMenuDB["Specs"][SpecMenu_SpecId()][3]][1])
+        end
+		GameTooltip:Show()
+        end
+	end)
+    SpecMenuFrame_QuickSwap:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
-SpecMenu_CreateFrame();
+
+InterfaceOptionsFrame:HookScript("OnShow", function()
+    if InterfaceOptionsFrame and SpecMenuOptionsFrame:IsVisible() then
+			SpecMenuOptions_OpenOptions();
+    end
+end)
+
+function addon:OnInitialize()
+        if ( SpecMenuDB == nil ) then
+            SpecMenuDB = CloneTable(DefaultSpecMenuDB);
+        end
+        lastActiveSpec = SpecMenuDB["LastSpec"];
+        SpMenuSpecNum = SpecMenu_SpecId();
+        SpecMenu_CreateFrame();
+        SpecMenuOptions_CreateFrame();
+        SpecMenuOptions_OpenOptions();
+end
