@@ -6,7 +6,6 @@ local lastActiveSpec;
 local nextSpec;
 SpecMenu_Dewdrop = AceLibrary("Dewdrop-2.0");
 SpecMenu_EnchantPreset_Dewdrop = AceLibrary("Dewdrop-2.0");
-SpecMenu_OptionsMenu_Dewdrop = AceLibrary("Dewdrop-2.0");
 
 --Set Savedvariables defaults
 local DefaultSpecMenuDB  = {
@@ -167,7 +166,7 @@ function SpecMenu_EnableMenu()
     end
 end
 
-function SpecMenuQuickSwap_OnClick(arg1)
+local function SpecMenuQuickSwap_OnClick(arg1)
     local specNum;
     SpecMenu_Dewdrop:Close();
         if (arg1=="LeftButton") then
@@ -194,9 +193,8 @@ function SpecMenuQuickSwap_OnClick(arg1)
         end
 end
 
-function SpecMenu_OnClick(arg1)
-    if SpecMenu_OptionsMenu_Dewdrop:IsOpen() or SpecMenu_EnchantPreset_Dewdrop:IsOpen() or SpecMenu_Dewdrop:IsOpen() then
-        SpecMenu_OptionsMenu_Dewdrop:Close();
+local function SpecMenu_OnClick(arg1)
+    if SpecMenu_EnchantPreset_Dewdrop:IsOpen() or SpecMenu_Dewdrop:IsOpen() then
         SpecMenu_EnchantPreset_Dewdrop:Close();
         SpecMenu_Dewdrop:Close();
     else
@@ -212,41 +210,6 @@ function SpecMenu_OnClick(arg1)
             end
         end
     end
-end
-
-function SpecMenuFrame_OnClickHIDE()
-    if SPM.FrameClosed then
-        SpecMenuFrame:Show();
-        SPM.FrameClosed = false
-    else
-        SpecMenuFrame:Hide();
-        SPM.FrameClosed = true
-    end
-end
-
-function SpecMenuFrame_OnClickLOCK()
-    if SPM.FrameLocked then
-        SPM.FrameLocked = false;
-    else
-        SPM.FrameLocked = true;
-    end
-    SpecMenu_OptionsMenu_Dewdrop:Close()
-end
-
-function SpecMenuFrame_OnClick_MoveFrame()
-    if SPM.FrameLocked then
-        return
-    end
-    SpecMenuFrame:StartMoving();
-    SpecMenuFrame.isMoving = true;
-end
-
-function SpecMenuFrame_OnClick_StopMoveFrame()
-    if SPM.FrameLocked then
-        return
-    end
-    this:StopMovingOrSizing();
-    this.isMoving = false;
 end
 
 local function CloneTable(t)				-- return a copy of the table t
@@ -278,8 +241,8 @@ local function SpecMenu_CreateFrame()
         titleSize = 32,
     });
     mainframe:RegisterForDrag("LeftButton");
-    mainframe:SetScript("OnDragStart", function(self) SpecMenuFrame_OnClick_MoveFrame() end)
-    mainframe:SetScript("OnDragStop", function(self) SpecMenuFrame_OnClick_StopMoveFrame() end)
+    mainframe:SetScript("OnDragStart", function(self) mainframe:StartMoving() end)
+    mainframe:SetScript("OnDragStop", function(self) mainframe:StopMovingOrSizing() end)
 
 	local specbutton = CreateFrame("Button", "SpecMenuFrame_Menu", SpecMenuFrame, "OptionsButtonTemplate");
     specbutton:SetSize(100,30);
