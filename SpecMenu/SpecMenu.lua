@@ -1,4 +1,4 @@
-SpecMenu = LibStub("AceAddon-3.0"):NewAddon("SpecMenu", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceSerializer-3.0")
+SpecMenu = LibStub("AceAddon-3.0"):NewAddon("SpecMenu", "AceConsole-3.0", "AceTimer-3.0", "AceEvent-3.0", "AceComm-3.0", "AceSerializer-3.0")
 local SPM = LibStub("AceAddon-3.0"):GetAddon("SpecMenu")
 local addonName = ...
 local specbutton, lastActiveSpec, mainframe;
@@ -18,8 +18,15 @@ local DefaultSettings  = {
     { TableName = "Specs", {} },
     { TableName = "EnchantPresets", {} },
     { TableName = "LastSpec", 1 },
+    { TableName = "ShowMenuOnHover", false, Frame = "SpecMenuFrame",CheckBox = "SpecMenuOptions_ShowOnHover" },
+    { TableName = "HideMenu", false, CheckBox = "SpecMenuOptions_HideMenu"},
+    { TableName = "minimap", false, CheckBox = "SpecMenuOptions_HideMinimap"},
 };
 
+--[[ TableName = Name of the saved setting
+CheckBox = Global name of the checkbox if it has one and first numbered table entry is the boolean
+Text = Global name of where the text and first numbered table entry is the default text 
+Frame = Frame or button etc you want hidden/shown at start based on condition ]]
 local function setupSettings(db)
     for _,v in ipairs(DefaultSettings) do
         if db[v.TableName] == nil then
@@ -38,6 +45,9 @@ local function setupSettings(db)
         end
         if v.Text then
             _G[v.Text]:SetText(db[v.TableName])
+        end
+        if v.Frame then
+            _G[v.Frame]:Show(db[v.TableName])
         end
     end
 end
@@ -73,6 +83,12 @@ local function populatePresetDB()
     end
 end
 
+local function changeEnchantSet(specNum)
+    if SPM.db.Specs[specNum][3] then
+        RequestChangeRandomEnchantmentPreset(SPM.db.Specs[specNum][3] -2, true);
+    end
+end
+
 --[[ checks to see if current spec is not last spec.
 Done this way to stop it messing up last spec if you stop the cast mid way
  ]]
@@ -82,6 +98,7 @@ local function lastSpec(specNum)
     end
     mainframe.icon:SetTexture(SPM.specIcon[specNum] or defIcon);
     minimap.icon = SPM.specIcon[specNum] or defIcon;
+    SPM:ScheduleTimer(changeEnchantSet, .5, specNum);
     SPM:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED");
 end
 
@@ -202,8 +219,8 @@ local function SpecMenu_EnchantPreset_DewdropRegister(self)
                 'textR', 0,
                 'textG', 1,
                 'textB', 1,
-		    	'func', function() dewdrop:Close() end,
-		    	'notCheckable', true
+				'closeWhenClicked', true,
+				'notCheckable', true
 		    )
 		end,
 		'dontHook', true
@@ -248,6 +265,22 @@ local function mainButton_OnClick(self, arg1)
     end
 end
 
+local function toggleMainButton(toggle)
+    if SPM.db.ShowMenuOnHover then
+        if toggle == "show" then
+            SpecMenuFrame_Menu:Show()
+            SpecMenuFrame_QuickSwap:Show()
+            SpecMenuFrame.icon:Show()
+            SpecMenuFrame.Text:Show()
+        else
+            SpecMenuFrame_Menu:Hide()
+            SpecMenuFrame_QuickSwap:Hide()
+            SpecMenuFrame.icon:Hide()
+            SpecMenuFrame.Text:Hide()
+        end
+    end
+end
+
 --Creates the main interface
 	mainframe = CreateFrame("FRAME", "SpecMenuFrame", UIParent, nil);
     mainframe:SetSize(70,70);
@@ -265,14 +298,7 @@ end
     mainframe.Text:SetText("|cffffcc00Spec\nMenu");
     mainframe.Text:SetPoint("CENTER", mainframe.icon, "CENTER", 0, 0);
     mainframe:Show();
---[[     mainframe:SetScript("OnEnter", function()
-        SpecMenuFrame_Menu:Show()
-        SpecMenuFrame_QuickSwap:Show()
-    end)
-    mainframe:SetScript("OnLeave", function()
-        SpecMenuFrame_Menu:Hide()
-        SpecMenuFrame_QuickSwap:Hide()
-    end) ]]
+    mainframe:SetScript("OnEnter", function() toggleMainButton("show") end)
 
 	specbutton = CreateFrame("Button", "SpecMenuFrame_Menu", SpecMenuFrame);
     specbutton:SetSize(70,34);
@@ -290,12 +316,13 @@ end
         SPM:OnEnter(self)
         end
         specbutton.Highlight:Show();
+        toggleMainButton("show")
     end)
     specbutton:SetScript("OnLeave", function()
         specbutton.Highlight:Hide();
         GameTooltip:Hide();
+        toggleMainButton("hide")
     end);
-    specbutton:Show()
 --[[     specbutton:SetScript("OnEnter", function()
         SpecMenuFrame_Menu:Show()
         SpecMenuFrame_QuickSwap:Show()
@@ -311,7 +338,6 @@ end
     quickswapbutton:SetText("QuickSwap");
     quickswapbutton:RegisterForClicks("LeftButtonDown", "RightButtonDown");
     quickswapbutton:SetScript("OnClick", function(self, btnclick) quickSwap_OnClick(btnclick) end);
-    quickswapbutton:Show()
     quickswapbutton.Highlight = quickswapbutton:CreateTexture(nil, "OVERLAY");
     quickswapbutton.Highlight:SetSize(70,34);
     quickswapbutton.Highlight:SetPoint("CENTER", quickswapbutton, 0, 0);
@@ -336,47 +362,37 @@ end
             GameTooltip:AddDoubleLine("|cffffffff"..leftTxt,"|cffffffff"..rightTxt)
             GameTooltip:Show()
         end
+        toggleMainButton("show")
         quickswapbutton.Highlight:Show();
     end)
     quickswapbutton:SetScript("OnLeave", function()
         quickswapbutton.Highlight:Hide();
         GameTooltip:Hide();
+        toggleMainButton("hide")
     end);
 
 InterfaceOptionsFrame:HookScript("OnShow", function()
-    	--Create options if they havnt been loaded yet
-	if not SPM.OptionsLoaded then
-		SPM:Options_CreateFrame();
-	end
     if InterfaceOptionsFrame and SpecMenuOptionsFrame:IsVisible() then
 			SpecMenuOptions_OpenOptions();
     end
 end)
 
 function SPM:OnInitialize()
-        if not SpecMenuDB then SpecMenuDB = {} end
-        SPM.db = SpecMenuDB
-        setupSettings(SPM.db)
-        lastActiveSpec = SPM.db.LastSpec;
-        SpMenuSpecNum = SPM:SpecId();
-        SPM.OptionsLoaded = false;
+    if not SpecMenuDB then SpecMenuDB = {} end
+    SPM.db = SpecMenuDB
+    setupSettings(SPM.db)
+    lastActiveSpec = SPM.db.LastSpec;
+    SPM.optionsSpecNum = SPM:SpecId();
+    SPM.OptionsLoaded = false;
 end
 
 
 function SPM:OnEnable()
-    if not SPM.db.minimap then
-        SPM.db.minimap = {hide = false}
-    end
-
     if icon then
-        icon:Register('SpecMenu', minimap, SPM.db.minimap)
+        SPM.map = {hide = SPM.db.minimap}
+        icon:Register('SpecMenu', minimap, SPM.map)
     end
 
-    if SPM.db.minimap and SPM.db.minimap.hide then
-        --SpecMenu_Options_MapIcon:SetChecked(true);
-    else
-        --SpecMenu_Options_MapIcon:SetChecked(false);
-    end
     SPM.enchantSetsDB = AscensionUI_CDB.EnchantManager.presets
     SPM.specName = AscensionUI_CDB.CA2.SpecNamesCustom
     SPM.specIcon = AscensionUI_CDB.CA2.SpecIconsCustom
@@ -390,6 +406,8 @@ function SPM:OnEnable()
         mainframe.icon:SetTexture(SPM.specIcon[SPM:SpecId()] or defIcon);
         minimap.icon = SPM.specIcon[SPM:SpecId()] or defIcon;
     end)
+    SPM:DropDownInitialize()
+    toggleMainButton("hide")
 end
 
 local function GetTipAnchor(frame)
@@ -443,8 +461,8 @@ function minimap.OnEnter(self)
 end
 
 function SPM:ToggleMinimap()
-    local hide = not SPM.db.minimap.hide
-    SPM.db.minimap.hide = hide
+    local hide = not SPM.db.minimap
+    SPM.db.minimap = hide
     if hide then
       icon:Hide('SpecMenu')
     else
