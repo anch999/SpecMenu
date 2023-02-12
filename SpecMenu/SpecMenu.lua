@@ -100,6 +100,12 @@ local function lastSpec(specNum)
     minimap.icon = SPM.specIcon[specNum] or defIcon;
     SPM:ScheduleTimer(changeEnchantSet, .5, specNum);
     SPM:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED");
+    SPM:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTED");
+end
+
+local function castInterrupted()
+    SPM:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED");
+    SPM:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTED");
 end
 
 local function SpecMenu_DewdropClick(specNum)
@@ -108,16 +114,17 @@ local function SpecMenu_DewdropClick(specNum)
         --used for the last spec quickswap selection
         lastActiveSpec = SPM:SpecId();
         SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec, specNum);
+        SPM:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", castInterrupted);
         --ascension function for loading specs
         CA_ActivateSpec(specNum);
     else
-        print("Spec is already active")
+        DEFAULT_CHAT_FRAME:AddMessage("Spec is already active")
     end
     dewdrop:Close();
 end
 
 --sets up the drop down menu for specs
-local function SpecMenu_DewdropRegister(self)
+local function SpecMenu_DewdropRegister(self, frame)
     PopulateSpecDB();
     dewdrop:Register(self,
         'point', function(parent)
@@ -152,6 +159,14 @@ local function SpecMenu_DewdropRegister(self)
             end
             addSpec()
             dewdrop:AddLine()
+            if frame == "SpecMenuFrame_Menu" then
+                dewdrop:AddLine(
+                    'text', "Unlock Frame",
+                    'func', SPM.UnlockFrame,
+                    'notCheckable', true,
+                    'closeWhenClicked', true
+                )
+            end
             dewdrop:AddLine(
 				'text', "Options",
 				'func', SPM.Options_Toggle,
@@ -247,9 +262,10 @@ local function quickSwap_OnClick(arg1)
         if IsMounted() then Dismount(); end
         lastActiveSpec = SPM:SpecId();
         SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec, specNum);
+        SPM:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", castInterrupted);
         CA_ActivateSpec(specNum);
     else
-        print("Spec is already active")
+        DEFAULT_CHAT_FRAME:AddMessage("Spec is already active")
     end
 end
 
@@ -257,7 +273,7 @@ local function mainButton_OnClick(self, arg1)
     if dewdrop:IsOpen() then SPM:OnEnter(self) dewdrop:Close() return end
     GameTooltip:Hide()
     if (arg1=="LeftButton") then
-        SpecMenu_DewdropRegister(self);
+        SpecMenu_DewdropRegister(self, "SpecMenuFrame_Menu");
         dewdrop:Open(self);
     elseif (arg1=="RightButton") then
         SpecMenu_EnchantPreset_DewdropRegister(self);
@@ -281,29 +297,61 @@ local function toggleMainButton(toggle)
     end
 end
 
+local unlocked = false
+function SPM:UnlockFrame()
+    if unlocked then
+        SpecMenuFrame_Menu:Show()
+        SpecMenuFrame_QuickSwap:Show()
+        SpecMenuFrame.Highlight:Hide()
+        unlocked = false
+        GameTooltip:Hide()
+    else
+        SpecMenuFrame_Menu:Hide()
+        SpecMenuFrame_QuickSwap:Hide()
+        SpecMenuFrame.Highlight:Show()
+        unlocked = true
+    end
+end
+
 --Creates the main interface
-	mainframe = CreateFrame("FRAME", "SpecMenuFrame", UIParent, nil);
+	mainframe = CreateFrame("Button", "SpecMenuFrame", UIParent, nil);
     mainframe:SetSize(70,70);
     mainframe:EnableMouse(true);
-    mainframe:SetMovable(true);
     mainframe:RegisterForDrag("LeftButton");
     mainframe:SetScript("OnDragStart", function(self) mainframe:StartMoving() end);
     mainframe:SetScript("OnDragStop", function(self) mainframe:StopMovingOrSizing() end);
+    mainframe:SetMovable(true)
+    mainframe:RegisterForClicks("RightButtonDown");
+    mainframe:SetScript("OnClick", function(self, btnclick) if unlocked then SPM:UnlockFrame() end end);
     mainframe.icon = mainframe:CreateTexture(nil, "ARTWORK");
     mainframe.icon:SetSize(55,55);
-    mainframe.icon:SetPoint("TOPLEFT", mainframe,"TOPLEFT",1,-1);
+    mainframe.icon:SetPoint("CENTER", mainframe,"CENTER",0,0);
     mainframe.Text = mainframe:CreateFontString();
-    mainframe.Text:SetFont("Fonts\\FRIZQT__.TTF", 13); 
+    mainframe.Text:SetFont("Fonts\\FRIZQT__.TTF", 13);
     mainframe.Text:SetFontObject(GameFontNormal);
-    mainframe.Text:SetText("|cffffcc00Spec\nMenu");
+    mainframe.Text:SetText("|cffffffffSpec\nMenu");
     mainframe.Text:SetPoint("CENTER", mainframe.icon, "CENTER", 0, 0);
+    mainframe.Highlight = mainframe:CreateTexture(nil, "OVERLAY");
+    mainframe.Highlight:SetSize(70,70);
+    mainframe.Highlight:SetPoint("CENTER", mainframe, 0, 0);
+    mainframe.Highlight:SetTexture("Interface\\AddOns\\AwAddons\\Textures\\EnchOverhaul\\Slot2Selected");
+    mainframe.Highlight:Hide();
     mainframe:Show();
-    mainframe:SetScript("OnEnter", function() toggleMainButton("show") end)
+    mainframe:SetScript("OnEnter", function(self) 
+        if unlocked then
+            GameTooltip:SetOwner(self, "ANCHOR_TOP")
+            GameTooltip:AddLine("Left click to drag")
+            GameTooltip:AddLine("Right click to lock frame")
+            GameTooltip:Show()
+        else
+            toggleMainButton("show")
+        end
+    end)
+    mainframe:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 	specbutton = CreateFrame("Button", "SpecMenuFrame_Menu", SpecMenuFrame);
     specbutton:SetSize(70,34);
-    specbutton:SetPoint("BOTTOM", SpecMenuFrame, "BOTTOM", -6, 10);
-    specbutton:SetText("Spec\nMenu");
+    specbutton:SetPoint("BOTTOM", SpecMenuFrame, "BOTTOM", 0, 2);
     specbutton:RegisterForClicks("LeftButtonDown", "RightButtonDown");
     specbutton:SetScript("OnClick", function(self, btnclick) mainButton_OnClick(self, btnclick) end);
     specbutton.Highlight = specbutton:CreateTexture(nil, "OVERLAY");
@@ -323,19 +371,10 @@ end
         GameTooltip:Hide();
         toggleMainButton("hide")
     end);
---[[     specbutton:SetScript("OnEnter", function()
-        SpecMenuFrame_Menu:Show()
-        SpecMenuFrame_QuickSwap:Show()
-    end)
-    specbutton:SetScript("OnLeave", function()
-        SpecMenuFrame_Menu:Hide()
-        SpecMenuFrame_QuickSwap:Hide()
-    end) ]]
 
     local quickswapbutton = CreateFrame("Button", "SpecMenuFrame_QuickSwap", SpecMenuFrame);
     quickswapbutton:SetSize(70,34);
-    quickswapbutton:SetPoint("TOP", SpecMenuFrame, "TOP", -6, 2);
-    quickswapbutton:SetText("QuickSwap");
+    quickswapbutton:SetPoint("TOP", SpecMenuFrame, "TOP", 0, -2);
     quickswapbutton:RegisterForClicks("LeftButtonDown", "RightButtonDown");
     quickswapbutton:SetScript("OnClick", function(self, btnclick) quickSwap_OnClick(btnclick) end);
     quickswapbutton.Highlight = quickswapbutton:CreateTexture(nil, "OVERLAY");

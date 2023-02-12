@@ -70,8 +70,14 @@ local function options_PresetMenu_Initialize()
 	};
 		UIDropDownMenu_AddButton(info);
 	for i,_ in ipairs(SPM.db.EnchantPresets) do
+		local text
+		if SPM.enchantSetsDB[i] and SPM.enchantSetsDB[i].name then
+			text = SPM.enchantSetsDB[i].name
+		else
+			text = "Enchants Set "..i;
+		end
 		info = {
-					text = SPM.enchantSetsDB[i].name or ("Enchants Set "..i);
+					text = text;
 					func = options_PresetNameEdit_OnClick;
 				};
 					UIDropDownMenu_AddButton(info);
@@ -236,7 +242,7 @@ end
 	presetmenu.Lable = presetmenu:CreateFontString(nil , "BORDER", "GameFontNormal")
 	presetmenu.Lable:SetJustifyH("LEFT")
 	presetmenu.Lable:SetPoint("LEFT", presetmenu, 190, 0)
-	presetmenu.Lable:SetText("Select Enchant Set")
+	presetmenu.Lable:SetText("Select Enchant Set to auto load on spec change")
 
 	local hideMenu = CreateFrame("CheckButton", "SpecMenuOptions_HideMenu", SpecMenuOptionsFrame, "UICheckButtonTemplate");
 	hideMenu:SetPoint("TOPLEFT", 15, -235);
