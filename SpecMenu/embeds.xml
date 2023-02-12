@@ -17,6 +17,5 @@
 <Script file="Libs\DewdropLib\Dewdrop-2.0\Dewdrop-2.0.lua"/>
 
 <Script file="SpecMenu.lua"/>
-<Script file="SpecPopup.lua"/>
 <Script file="SpecMenuOptions.lua"/>
 </Ui>

@@ -47,7 +47,7 @@ local function setupSettings(db)
             _G[v.Text]:SetText(db[v.TableName])
         end
         if v.Frame then
-            _G[v.Frame]:Show(db[v.TableName])
+            if db[v.TableName] then _G[v.Frame]:Show() else _G[v.Frame]:Hide() end
         end
     end
 end
@@ -84,7 +84,7 @@ local function populatePresetDB()
 end
 
 local function changeEnchantSet(specNum)
-    if SPM.db.Specs[specNum][3] then
+    if SPM.db.Specs[specNum][3] and (SPM.db.Specs[specNum][3] - 1) ~= SPM:PresetId() then
         RequestChangeRandomEnchantmentPreset(SPM.db.Specs[specNum][3] -2, true);
     end
 end
@@ -297,6 +297,7 @@ local function toggleMainButton(toggle)
     end
 end
 
+-- Used to show highlight as a frame mover
 local unlocked = false
 function SPM:UnlockFrame()
     if unlocked then
@@ -336,7 +337,7 @@ end
     mainframe.Highlight:SetPoint("CENTER", mainframe, 0, 0);
     mainframe.Highlight:SetTexture("Interface\\AddOns\\AwAddons\\Textures\\EnchOverhaul\\Slot2Selected");
     mainframe.Highlight:Hide();
-    mainframe:Show();
+    mainframe:Hide();
     mainframe:SetScript("OnEnter", function(self) 
         if unlocked then
             GameTooltip:SetOwner(self, "ANCHOR_TOP")
@@ -412,7 +413,7 @@ end
 
 InterfaceOptionsFrame:HookScript("OnShow", function()
     if InterfaceOptionsFrame and SpecMenuOptionsFrame:IsVisible() then
-			SpecMenuOptions_OpenOptions();
+			SPM:OpenOptions();
     end
 end)
 
@@ -422,9 +423,33 @@ function SPM:OnInitialize()
     setupSettings(SPM.db)
     lastActiveSpec = SPM.db.LastSpec;
     SPM.optionsSpecNum = SPM:SpecId();
-    SPM.OptionsLoaded = false;
 end
 
+-- toggle the main button frame
+local function toggleMainFrame()
+    if SpecMenuFrame:IsVisible() then
+        SpecMenuFrame:Hide()
+    else
+        SpecMenuFrame:Show()
+    end
+end
+
+--[[
+SlashCommand(msg):
+msg - takes the argument for the /mysticextended command so that the appropriate action can be performed
+If someone types /mysticextended, bring up the options box
+]]
+local function SlashCommand(msg)
+    if msg == "reset" then
+        SpecMenuDB = nil
+        SPM:OnInitialize()
+        DEFAULT_CHAT_FRAME:AddMessage("Settings Reset")
+    elseif msg == "options" then
+        SPM:Options_Toggle()
+    else
+        toggleMainFrame()
+    end
+end
 
 function SPM:OnEnable()
     if icon then
@@ -447,6 +472,13 @@ function SPM:OnEnable()
     end)
     SPM:DropDownInitialize()
     toggleMainButton("hide")
+
+    --Enable the use of /me or /mysticextended to open the loot browser
+    SLASH_SPECMENU1 = "/specmenu";
+    SLASH_SPECMENU2 = "/spm";
+    SlashCmdList["SPECMENU"] = function(msg)
+        SlashCommand(msg);
+    end
 end
 
 local function GetTipAnchor(frame)

@@ -174,7 +174,8 @@ local function SpecMenuOptions_UpateDB_OnClick()
 		UIDropDownMenu_SetText(SpecMenuOptions_Menu, SPM.specName[SPM.optionsSpecNum]);
 end
 
-function SpecMenuOptions_OpenOptions()
+function SPM:OpenOptions()
+	if InterfaceOptionsFrame:GetWidth() < 850 then InterfaceOptionsFrame:SetWidth(850) end
 	if IsSpellKnown(SPM.SpecInfo[1]) then
 			local menuID = SPM:SpecId();
 			UIDropDownMenu_SetSelectedID(SpecMenuOptions_Menu, menuID);
@@ -206,7 +207,7 @@ function SpecMenuOptions_OpenOptions()
 end
 
 --Creates the options frame and all its assets
-	InterfaceOptionsFrame:SetWidth(850)
+	if InterfaceOptionsFrame:GetWidth() < 850 then InterfaceOptionsFrame:SetWidth(850) end
 	local mainframe = {};
 		mainframe.panel = CreateFrame("FRAME", "SpecMenuOptionsFrame", UIParent, nil);
     	local fstring = mainframe.panel:CreateFontString(mainframe, "OVERLAY", "GameFontNormal");
