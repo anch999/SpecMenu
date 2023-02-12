@@ -19,8 +19,9 @@ local DefaultSettings  = {
     { TableName = "EnchantPresets", {} },
     { TableName = "LastSpec", 1 },
     { TableName = "ShowMenuOnHover", false, Frame = "SpecMenuFrame",CheckBox = "SpecMenuOptions_ShowOnHover" },
-    { TableName = "HideMenu", false, CheckBox = "SpecMenuOptions_HideMenu"},
+    { TableName = "HideMenu", false, Frame = "SpecMenuFrame", CheckBox = "SpecMenuOptions_HideMenu"},
     { TableName = "minimap", false, CheckBox = "SpecMenuOptions_HideMinimap"},
+    { TableName = "UseOrbs", false, CheckBox = "SpecMenuOptions_UseOrbs"},
 };
 
 --[[ TableName = Name of the saved setting
@@ -47,7 +48,7 @@ local function setupSettings(db)
             _G[v.Text]:SetText(db[v.TableName])
         end
         if v.Frame then
-            if db[v.TableName] then _G[v.Frame]:Show() else _G[v.Frame]:Hide() end
+            if db[v.TableName] then _G[v.Frame]:Hide() else _G[v.Frame]:Show() end
         end
     end
 end
@@ -85,7 +86,7 @@ end
 
 local function changeEnchantSet(specNum)
     if SPM.db.Specs[specNum][3] and (SPM.db.Specs[specNum][3] - 1) ~= SPM:PresetId() then
-        RequestChangeRandomEnchantmentPreset(SPM.db.Specs[specNum][3] -2, true);
+        RequestChangeRandomEnchantmentPreset(SPM.db.Specs[specNum][3] -2, SPM.db.UseOrbs);
     end
 end
 
@@ -189,7 +190,7 @@ end
 local function SpecMenu_EnchantPreset_DewdropClick(presetNum)
     if IsMounted() then Dismount() end
         --ascension function for changing enchant presets
-        RequestChangeRandomEnchantmentPreset(presetNum -1, true);
+        RequestChangeRandomEnchantmentPreset(presetNum -1, SPM.db.UseOrbs);
         dewdrop:Close();
 end
 

@@ -292,3 +292,10 @@ end
 	hideMinimap.Lable:SetText("Hide Minimap Icon");
 	hideMinimap:SetScript("OnClick", function() SPM:ToggleMinimap() end);
 
+	local useOrbs = CreateFrame("CheckButton", "SpecMenuOptions_UseOrbs", SpecMenuOptionsFrame, "UICheckButtonTemplate");
+	useOrbs:SetPoint("TOPLEFT", 15, -340);
+	useOrbs.Lable = useOrbs:CreateFontString(nil , "BORDER", "GameFontNormal");
+	useOrbs.Lable:SetJustifyH("LEFT");
+	useOrbs.Lable:SetPoint("LEFT", 30, 0);
+	useOrbs.Lable:SetText("Use orbs/gold when swapping enchant sets if required");
+	useOrbs:SetScript("OnClick", function() SPM.db.UseOrbs = not SPM.db.UseOrbs end);
