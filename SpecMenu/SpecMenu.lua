@@ -134,6 +134,8 @@ local function SpecMenu_DewdropRegister(self, frame)
         'children', function(level, value)
             dewdrop:AddLine(
                 'text', "|cffffff00Specializations",
+                'textHeight', 12,
+                'textWidth', 12,
                 'isTitle', true,
                 'notCheckable', true
             )
@@ -150,6 +152,8 @@ local function SpecMenu_DewdropRegister(self, frame)
                         dewdrop:AddLine(
                                 'text', active,
                                 'icon', SPM.specIcon[i] or defIcon,
+                                'textHeight', 12,
+                                'textWidth', 12,
                                 'func', SpecMenu_DewdropClick,
                                 'arg1', i
                         )
@@ -163,6 +167,8 @@ local function SpecMenu_DewdropRegister(self, frame)
             if frame == "SpecMenuFrame_Menu" then
                 dewdrop:AddLine(
                     'text', "Unlock Frame",
+                    'textHeight', 12,
+                    'textWidth', 12,
                     'func', SPM.UnlockFrame,
                     'notCheckable', true,
                     'closeWhenClicked', true
@@ -170,6 +176,8 @@ local function SpecMenu_DewdropRegister(self, frame)
             end
             dewdrop:AddLine(
 				'text', "Options",
+                'textHeight', 12,
+                'textWidth', 12,
 				'func', SPM.Options_Toggle,
 				'notCheckable', true,
                 'closeWhenClicked', true
@@ -179,6 +187,8 @@ local function SpecMenu_DewdropRegister(self, frame)
                 'textR', 0,
                 'textG', 1,
                 'textB', 1,
+                'textHeight', 12,
+                'textWidth', 12,
 				'closeWhenClicked', true,
 				'notCheckable', true
 			)
@@ -204,6 +214,8 @@ local function SpecMenu_EnchantPreset_DewdropRegister(self)
         'children', function(level, value)
             dewdrop:AddLine(
                 'text', "|cffffff00Enchant Sets",
+                'textHeight', 12,
+                'textWidth', 12,
                 'isTitle', true,
                 'notCheckable', true
             )
@@ -220,6 +232,8 @@ local function SpecMenu_EnchantPreset_DewdropRegister(self)
                         end
                         dewdrop:AddLine(
                                 'text', text,
+                                'textHeight', 12,
+                                'textWidth', 12,
                                 'icon', icon,
                                 'func', SpecMenu_EnchantPreset_DewdropClick,
                                 'arg1', i
@@ -232,6 +246,8 @@ local function SpecMenu_EnchantPreset_DewdropRegister(self)
             addPreset()
             dewdrop:AddLine(
 		    	'text', "Close Menu",
+                'textHeight', 12,
+                'textWidth', 12,
                 'textR', 0,
                 'textG', 1,
                 'textB', 1,
