@@ -105,6 +105,7 @@ local function lastSpec(specNum)
 end
 
 local function castInterrupted()
+    SPM:CancelTimer(changeEnchantSet);
     SPM:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED");
     SPM:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTED");
 end
