@@ -93,15 +93,19 @@ end
 --[[ checks to see if current spec is not last spec.
 Done this way to stop it messing up last spec if you stop the cast mid way
  ]]
-local function lastSpec(specNum)
-    if lastActiveSpec ~= specNum then
-        SPM.db.LastSpec = lastActiveSpec;
+local function lastSpec(event, ...)
+    local target, spell = ...
+        if target == "player" and spell:match("Specialization") then
+        local specNum = SPM.specNum
+        if lastActiveSpec ~= specNum then
+            SPM.db.LastSpec = lastActiveSpec;
+        end
+        mainframe.icon:SetTexture(SPM.specIcon[specNum] or defIcon);
+        minimap.icon = SPM.specIcon[specNum] or defIcon;
+        SPM:ScheduleTimer(changeEnchantSet, .5, specNum);
+        SPM:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED");
+        SPM:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTED");
     end
-    mainframe.icon:SetTexture(SPM.specIcon[specNum] or defIcon);
-    minimap.icon = SPM.specIcon[specNum] or defIcon;
-    SPM:ScheduleTimer(changeEnchantSet, .5, specNum);
-    SPM:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED");
-    SPM:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTED");
 end
 
 local function castInterrupted()
@@ -115,7 +119,8 @@ local function SpecMenu_DewdropClick(specNum)
         if IsMounted() then Dismount() end
         --used for the last spec quickswap selection
         lastActiveSpec = SPM:SpecId();
-        SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec, specNum);
+        SPM.specNum = specNum
+        SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec);
         SPM:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", castInterrupted);
         --ascension function for loading specs
         CA_ActivateSpec(specNum);
@@ -279,7 +284,8 @@ local function quickSwap_OnClick(arg1)
     if specNum ~= SPM:SpecId() then
         if IsMounted() then Dismount(); end
         lastActiveSpec = SPM:SpecId();
-        SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec, specNum);
+        SPM.specNum = specNum
+        SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec);
         SPM:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", castInterrupted);
         CA_ActivateSpec(specNum);
     else
