@@ -123,7 +123,8 @@ local function SpecMenu_DewdropClick(specNum)
         SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec);
         SPM:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", castInterrupted);
         --ascension function for loading specs
-        CA_ActivateSpec(specNum);
+        local spell = SpecializationUtil.GetSpecializationSpell(specNum)
+        CastSpecialSpell(spell)
     else
         DEFAULT_CHAT_FRAME:AddMessage("Spec is already active")
     end
@@ -287,7 +288,8 @@ local function quickSwap_OnClick(arg1)
         SPM.specNum = specNum
         SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec);
         SPM:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", castInterrupted);
-        CA_ActivateSpec(specNum);
+        local spell = SpecializationUtil.GetSpecializationSpell(specNum)
+        CastSpecialSpell(spell)
     else
         DEFAULT_CHAT_FRAME:AddMessage("Spec is already active")
     end
