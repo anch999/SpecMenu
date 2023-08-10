@@ -27,16 +27,6 @@ local function options_Menu_OnClick()
 		UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap2, SPM.db.Specs[thisID][2]);
 	end
 
-	local presetID = SPM.db.Specs[thisID][3];
-	if presetID then
-		UIDropDownMenu_SetSelectedID(SpecMenuOptions_PresetMenu, presetID);
-		UIDropDownMenu_SetText(SpecMenuOptions_PresetMenu, SPM.enchantSetsDB[SPM.db.Specs[thisID][3]-1].name);
-
-	else
-		UIDropDownMenu_SetSelectedID(SpecMenuOptions_PresetMenu, 1);
-		UIDropDownMenu_SetText(SpecMenuOptions_PresetMenu, "None");
-	end
-
 	SPM.optionsSpecNum = thisID;
 end
 
@@ -46,39 +36,6 @@ local function options_Menu_Initialize()
 				info = {
 					text = SPM.specName[i] or ("Specialization "..i);
 					func = options_Menu_OnClick;
-				};
-					UIDropDownMenu_AddButton(info);
-	end
-end
-
-local function options_PresetNameEdit_OnClick()
-	local thisID = this:GetID();
-	UIDropDownMenu_SetSelectedID(SpecMenuOptions_PresetMenu, thisID);
-	if thisID == 1 then
-		SPM.db.Specs[SPM.optionsSpecNum][3] = false
-	else
-		SPM.db.Specs[SPM.optionsSpecNum][3] = thisID
-	end
-end
-
-local function options_PresetMenu_Initialize()
-	--Loads the enchant preset list into the enchant preset dropdown menu
-	local info;
-	info = {
-		text = "None";
-		func = options_PresetNameEdit_OnClick;
-	};
-		UIDropDownMenu_AddButton(info);
-	for i,_ in ipairs(SPM.db.EnchantPresets) do
-		local text
-		if SPM.enchantSetsDB[i] and SPM.enchantSetsDB[i].name then
-			text = SPM.enchantSetsDB[i].name
-		else
-			text = "Enchants Set "..i;
-		end
-		info = {
-					text = text;
-					func = options_PresetNameEdit_OnClick;
 				};
 					UIDropDownMenu_AddButton(info);
 	end
@@ -163,9 +120,6 @@ function SPM:DropDownInitialize()
 	UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap2);
 	UIDropDownMenu_SetWidth(SpecMenuOptions_QuickSwap2, 150);
 
-	UIDropDownMenu_Initialize(SpecMenuOptions_PresetMenu, options_PresetMenu_Initialize);
-	UIDropDownMenu_SetSelectedID(SpecMenuOptions_PresetMenu);
-	UIDropDownMenu_SetWidth(SpecMenuOptions_PresetMenu, 150);
 end
 
 local function SpecMenuOptions_UpateDB_OnClick()
@@ -181,7 +135,6 @@ function SPM:OpenOptions()
 			UIDropDownMenu_SetSelectedID(SpecMenuOptions_Menu, menuID);
 			UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap1, SPM.db.Specs[menuID][1]);
 			UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap2, SPM.db.Specs[menuID][2]);
-			UIDropDownMenu_SetSelectedID(SpecMenuOptions_PresetMenu, SPM.db.Specs[menuID][3] or 1);
 
 		if SPM.db.Specs[menuID][1] == "LastSpec" then
 			UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap1, specmenu_options_swap);
@@ -193,12 +146,6 @@ function SPM:OpenOptions()
 			UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap2, specmenu_options_swap);
 		else
 			UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap2, SPM.specName[SPM.db.Specs[menuID][2]]);
-		end
-
-		if SPM.db.Specs[menuID][3] then
-			UIDropDownMenu_SetText(SpecMenuOptions_PresetMenu, SPM.enchantSetsDB[SPM.db.Specs[menuID][3]-1].name);
-		else
-			UIDropDownMenu_SetText(SpecMenuOptions_PresetMenu, "None");
 		end
 
 		UIDropDownMenu_SetText(SpecMenuOptions_Menu, SPM.specName[menuID]);
@@ -237,13 +184,6 @@ end
 	quickswap2.Lable:SetJustifyH("LEFT")
 	quickswap2.Lable:SetPoint("LEFT", quickswap2, 190, 0)
 	quickswap2.Lable:SetText("QuickSwap Right Click")
-
-	local presetmenu = CreateFrame("Button", "SpecMenuOptions_PresetMenu", SpecMenuOptionsFrame, "UIDropDownMenuTemplate");
-    presetmenu:SetPoint("TOPLEFT", 15, -165);
-	presetmenu.Lable = presetmenu:CreateFontString(nil , "BORDER", "GameFontNormal")
-	presetmenu.Lable:SetJustifyH("LEFT")
-	presetmenu.Lable:SetPoint("LEFT", presetmenu, 190, 0)
-	presetmenu.Lable:SetText("Select Enchant Set to auto load on spec change")
 
 	local hideMenu = CreateFrame("CheckButton", "SpecMenuOptions_HideMenu", SpecMenuOptionsFrame, "UICheckButtonTemplate");
 	hideMenu:SetPoint("TOPLEFT", 15, -235);
@@ -291,11 +231,3 @@ end
 	hideMinimap.Lable:SetPoint("LEFT", 30, 0);
 	hideMinimap.Lable:SetText("Hide Minimap Icon");
 	hideMinimap:SetScript("OnClick", function() SPM:ToggleMinimap() end);
-
-	local useOrbs = CreateFrame("CheckButton", "SpecMenuOptions_UseOrbs", SpecMenuOptionsFrame, "UICheckButtonTemplate");
-	useOrbs:SetPoint("TOPLEFT", 15, -340);
-	useOrbs.Lable = useOrbs:CreateFontString(nil , "BORDER", "GameFontNormal");
-	useOrbs.Lable:SetJustifyH("LEFT");
-	useOrbs.Lable:SetPoint("LEFT", 30, 0);
-	useOrbs.Lable:SetText("Use orbs/gold when swapping enchant sets if required");
-	useOrbs:SetScript("OnClick", function() SPM.db.UseOrbs = not SPM.db.UseOrbs end);

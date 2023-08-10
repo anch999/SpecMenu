@@ -5,6 +5,7 @@ local specbutton, lastActiveSpec, mainframe;
 local dewdrop = AceLibrary("Dewdrop-2.0");
 local defIcon = "Interface\\Icons\\inv_misc_book_16"
 local icon = LibStub('LibDBIcon-1.0');
+local CYAN =  "|cff00ffff"
 local 
 SPECMENU_MINIMAP = LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject(addonName, {
     type = 'data source',
@@ -21,7 +22,6 @@ local DefaultSettings  = {
     { TableName = "ShowMenuOnHover", false, Frame = "SpecMenuFrame",CheckBox = "SpecMenuOptions_ShowOnHover" },
     { TableName = "HideMenu", false, Frame = "SpecMenuFrame", CheckBox = "SpecMenuOptions_HideMenu"},
     { TableName = "minimap", false, CheckBox = "SpecMenuOptions_HideMinimap"},
-    { TableName = "UseOrbs", false, CheckBox = "SpecMenuOptions_UseOrbs"},
 };
 
 --[[ TableName = Name of the saved setting
@@ -59,7 +59,7 @@ end
 
 --returns current active enchant preset 
 function SPM:PresetId()
-    return GetREPreset() +1
+    return MysticEnchantManagerUtil.GetActivePreset()
 end
 
 local function spellCheck(num,type)
@@ -84,11 +84,6 @@ local function populatePresetDB()
     end
 end
 
-local function changeEnchantSet(specNum)
-    if SPM.db.Specs[specNum][3] and (SPM.db.Specs[specNum][3] - 1) ~= SPM:PresetId() then
-        RequestChangeRandomEnchantmentPreset(SPM.db.Specs[specNum][3] -2, SPM.db.UseOrbs);
-    end
-end
 
 --[[ checks to see if current spec is not last spec.
 Done this way to stop it messing up last spec if you stop the cast mid way
@@ -102,16 +97,9 @@ local function lastSpec(event, ...)
         end
         mainframe.icon:SetTexture(SPM.specIcon[specNum] or defIcon);
         minimap.icon = SPM.specIcon[specNum] or defIcon;
-        SPM:ScheduleTimer(changeEnchantSet, .5, specNum);
         SPM:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED");
         SPM:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTED");
     end
-end
-
-local function castInterrupted()
-    SPM:CancelTimer(changeEnchantSet);
-    SPM:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED");
-    SPM:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTED");
 end
 
 local function SpecMenu_DewdropClick(specNum)
@@ -121,12 +109,11 @@ local function SpecMenu_DewdropClick(specNum)
         lastActiveSpec = SPM:SpecId();
         SPM.specNum = specNum
         SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec);
-        SPM:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", castInterrupted);
         --ascension function for loading specs
         local spell = SpecializationUtil.GetSpecializationSpell(specNum)
         CastSpecialSpell(spell)
     else
-        DEFAULT_CHAT_FRAME:AddMessage("Spec is already active")
+        DEFAULT_CHAT_FRAME:AddMessage(CYAN.."Spec is already active")
     end
     dewdrop:Close();
 end
@@ -204,10 +191,16 @@ local function SpecMenu_DewdropRegister(self, frame)
 	)
 end
 
-local function SpecMenu_EnchantPreset_DewdropClick(presetNum)
+local function SpecMenu_EnchantPreset_DewdropClick(presetID)
     if IsMounted() then Dismount() end
         --ascension function for changing enchant presets
-        RequestChangeRandomEnchantmentPreset(presetNum -1, SPM.db.UseOrbs);
+            if presetID then
+                if MysticEnchantManagerUtil.GetActivePreset() ~= presetID then
+                    MysticEnchantManagerUtil.AttemptOperation("Activate", "CanActivate", presetID)
+                else
+                    DEFAULT_CHAT_FRAME:AddMessage(CYAN.."Enchant Set is already active")
+                end
+            end
         dewdrop:Close();
 end
 
@@ -291,7 +284,7 @@ local function quickSwap_OnClick(arg1)
         local spell = SpecializationUtil.GetSpecializationSpell(specNum)
         CastSpecialSpell(spell)
     else
-        DEFAULT_CHAT_FRAME:AddMessage("Spec is already active")
+        DEFAULT_CHAT_FRAME:AddMessage(CYAN.."Spec is already active")
     end
 end
 
