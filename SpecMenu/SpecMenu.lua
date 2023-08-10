@@ -14,6 +14,7 @@ SPECMENU_MINIMAP = LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject(addonNa
   })
 local minimap = SPECMENU_MINIMAP
 
+
 --Set Savedvariables defaults
 local DefaultSettings  = {
     { TableName = "Specs", {} },
@@ -52,6 +53,15 @@ local function setupSettings(db)
         end
     end
 end
+
+function SPM:GetPresetName(index)
+    return MysticEnchantManagerUtil.GetPresetName(index)
+end
+
+function SPM:GetPresetIcon(index)
+    return MysticEnchantManagerUtil.GetPresetIcon(index)
+end
+
 --returns current active spec
 function SPM:SpecId()
     return CA_GetActiveSpecId() +1
@@ -223,13 +233,9 @@ local function SpecMenu_EnchantPreset_DewdropRegister(self)
                 for i,v in ipairs(SPM.PresetSpellIDs) do
                     if IsSpellKnown(v) then
                         local active = ""
-                        local icon = defIcon
                         if spellCheck(i,"enchant") then active = " |cFF00FFFF(Active)" end
-                        local text = "Enchants Set "..i..active
-                        if SPM.enchantSetsDB[i] then
-                            if SPM.enchantSetsDB[i].name then text = SPM.enchantSetsDB[i].name..active end
-                            if SPM.enchantSetsDB[i].icon then icon = SPM.enchantSetsDB[i].icon end
-                        end
+                        local text = SPM:GetPresetName(i)..active
+                        local icon = SPM:GetPresetIcon(i)
                         dewdrop:AddLine(
                                 'text', text,
                                 'textHeight', 12,
@@ -280,7 +286,6 @@ local function quickSwap_OnClick(arg1)
         lastActiveSpec = SPM:SpecId();
         SPM.specNum = specNum
         SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec);
-        SPM:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", castInterrupted);
         local spell = SpecializationUtil.GetSpecializationSpell(specNum)
         CastSpecialSpell(spell)
     else
@@ -476,7 +481,6 @@ function SPM:OnEnable()
         icon:Register('SpecMenu', minimap, SPM.map)
     end
 
-    SPM.enchantSetsDB = AscensionUI_CDB.EnchantManager.presets
     SPM.specName = AscensionUI_CDB.CA2.SpecNamesCustom
     SPM.specIcon = AscensionUI_CDB.CA2.SpecIconsCustom
     SPM.SpecInfo = SPEC_SWAP_SPELLS
@@ -535,11 +539,7 @@ function SPM:OnEnter(self)
     else
         specName = "|cffffffffSpecialization "..specID
     end
-    if SPM.enchantSetsDB[presetID] and SPM.enchantSetsDB[presetID].name then
-        presetName = "|cffffffff"..SPM.enchantSetsDB[presetID].name
-    else
-        presetName = "|cffffffffEnchants Set "..presetID
-    end
+    presetName = "|cffffffff"..SPM:GetPresetName(presetID)
     GameTooltip:AddLine("SpecMenu")
     GameTooltip:AddDoubleLine("Active Spec:", specName)
     GameTooltip:AddDoubleLine("Active Preset:", presetName)
