@@ -85,16 +85,6 @@ local function PopulateSpecDB()
     end
 end
 
---loads the table of enchant presets by checking if you know the spell for the preset that is associated with it
-local function populatePresetDB()
-    for i,v in ipairs(SPM.PresetSpellIDs) do
-        if CA_IsSpellKnown(v) and not SPM.db.EnchantPresets[i] then
-            SPM.db.EnchantPresets[i] = true;
-        end
-    end
-end
-
-
 --[[ checks to see if current spec is not last spec.
 Done this way to stop it messing up last spec if you stop the cast mid way
  ]]
@@ -216,7 +206,6 @@ end
 
 --sets up the drop down menu for enchant presets
 local function SpecMenu_EnchantPreset_DewdropRegister(self)
-    populatePresetDB();
     dewdrop:Register(self,
         'point', function(parent)
             return "TOP", "BOTTOM"
@@ -230,23 +219,19 @@ local function SpecMenu_EnchantPreset_DewdropRegister(self)
                 'notCheckable', true
             )
             local function addPreset()
-                for i,v in ipairs(SPM.PresetSpellIDs) do
-                    if CA_IsSpellKnown(v) then
-                        local active = ""
-                        if spellCheck(i,"enchant") then active = " |cFF00FFFF(Active)" end
-                        local text = SPM:GetPresetName(i)..active
-                        local icon = SPM:GetPresetIcon(i)
-                        dewdrop:AddLine(
-                                'text', text,
-                                'textHeight', 12,
-                                'textWidth', 12,
-                                'icon', icon,
-                                'func', SpecMenu_EnchantPreset_DewdropClick,
-                                'arg1', i
-                        )
-                    else
-                        return
-                    end
+                for i = 1, C_MysticEnchantPreset.GetNumPresets() do
+                    local active = ""
+                    if spellCheck(i,"enchant") then active = " |cFF00FFFF(Active)" end
+                    local text = SPM:GetPresetName(i)..active
+                    local icon = SPM:GetPresetIcon(i)
+                    dewdrop:AddLine(
+                            'text', text,
+                            'textHeight', 12,
+                            'textWidth', 12,
+                            'icon', icon,
+                            'func', SpecMenu_EnchantPreset_DewdropClick,
+                            'arg1', i
+                    )
                 end
             end
             addPreset()
@@ -484,10 +469,8 @@ function SPM:OnEnable()
     SPM.specName = AscensionUI_CDB.CA2.SpecNamesCustom
     SPM.specIcon = AscensionUI_CDB.CA2.SpecIconsCustom
     SPM.SpecInfo = SPEC_SWAP_SPELLS
-    SPM.PresetSpellIDs = PRESET_CHANGE_SPELLS
     mainframe.icon:SetTexture(SPM.specIcon[SPM:SpecId()] or defIcon);
     minimap.icon = SPM.specIcon[SPM:SpecId()] or defIcon
-    populatePresetDB()
     PopulateSpecDB()
     CA2.Scroll_SpecList.PopupController.frame:HookScript("OnHide", function()
         mainframe.icon:SetTexture(SPM.specIcon[SPM:SpecId()] or defIcon);
