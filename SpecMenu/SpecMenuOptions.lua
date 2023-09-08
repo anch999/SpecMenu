@@ -1,5 +1,5 @@
 local specmenu_options_swap = "Last Active Spec";
-local quickSwapNum = "";
+local favoriteNum = "";
 local lastSpecPos
 local SPM = LibStub("AceAddon-3.0"):GetAddon("SpecMenu")
 
@@ -16,15 +16,15 @@ local function options_Menu_OnClick()
 	UIDropDownMenu_SetSelectedID(SpecMenuOptions_Menu, thisID);
 
 	if SPM.db.Specs[thisID][1] == "LastSpec" then
-		UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap1, lastSpecPos);
+		UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite1, lastSpecPos);
 	else
-		UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap1, SPM.db.Specs[thisID][1]);
+		UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite1, SPM.db.Specs[thisID][1]);
 	end
 
 	if SPM.db.Specs[thisID][2] == "LastSpec" then
-		UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap1, lastSpecPos);
+		UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite1, lastSpecPos);
 	else
-		UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap2, SPM.db.Specs[thisID][2]);
+		UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite2, SPM.db.Specs[thisID][2]);
 	end
 
 	SPM.optionsSpecNum = thisID;
@@ -41,68 +41,68 @@ local function options_Menu_Initialize()
 	end
 end
 
-local function options_QuickSwapLastSpec_OnClick(num)
+local function options_favoriteLastSpec_OnClick(num)
 	local thisID = this:GetID();
-	if quickSwapNum == "1" then
-		UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap1, thisID);
+	if favoriteNum == "1" then
+		UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite1, thisID);
 		SPM.db.Specs[SPM.optionsSpecNum][1] = "LastSpec";
-	elseif quickSwapNum == "2" then
-		UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap2, thisID);
-		SpecMenu_QuickswapNum2 = "LastSpec";
+	elseif favoriteNum == "2" then
+		UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite2, thisID);
+		SpecMenu_favoriteNum2 = "LastSpec";
 		SPM.db.Specs[SPM.optionsSpecNum][2] = "LastSpec";
 	end
 end
 
-local function options_QuickSwap1_OnClick()
+local function options_favorite1_OnClick()
 	local thisID = this:GetID();
-	UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap1, thisID);
+	UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite1, thisID);
 	SPM.db.Specs[SPM.optionsSpecNum][1] = thisID;
 end
 
-local function options_QuickSwap1_Initialize()
-	--Loads the spec list into the quickswap1 dropdown menu
+local function options_favorite1_Initialize()
+	--Loads the spec list into the favorite1 dropdown menu
 	local info;
 	for i,_ in ipairs(SPM.db.Specs) do
 		info = {
 					text = SPM.specName[i] or ("Specialization "..i);
-					func = options_QuickSwap1_OnClick;
+					func = options_favorite1_OnClick;
 				};
 					UIDropDownMenu_AddButton(info);
 					lastSpecPos = i + 1
 	end
-	--Adds Lastspec as the last entry on the quickswap1 dropdown menu 
+	--Adds Lastspec as the last entry on the favorite1 dropdown menu 
 	info = {
 		text = specmenu_options_swap;
-		func = options_QuickSwapLastSpec_OnClick;
+		func = options_favoriteLastSpec_OnClick;
 	};
 		UIDropDownMenu_AddButton(info);
-		quickSwapNum = "1"
+		favoriteNum = "1"
 end
 
-local function options_QuickSwap2_OnClick()
+local function options_favorite2_OnClick()
 	local thisID = this:GetID();
-	UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap2, thisID);
+	UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite2, thisID);
 	SPM.db.Specs[SPM.optionsSpecNum][2] = thisID;
 end
 
-function SPM:Options_QuickSwap2_Initialize()
-	--Loads the spec list into the quickswap2 dropdown menu
+function SPM:Options_favorite2_Initialize()
+	--Loads the spec list into the favorite2 dropdown menu
 	local info;
 	for i,_ in ipairs(SPM.db.Specs) do
 		info = {
 			text = SPM.specName[i] or ("Specialization "..i);
-			func = options_QuickSwap2_OnClick;
+			func = options_favorite2_OnClick;
 		};
 			UIDropDownMenu_AddButton(info);
 			lastSpecPos = i + 1
 	end
-	--Adds Lastspec as the last entry on the quickswap2 dropdown menu 
+	--Adds Lastspec as the last entry on the favorite2 dropdown menu 
 	info = {
 		text = specmenu_options_swap;
-		func = options_QuickSwapLastSpec_OnClick;
+		func = options_favoriteLastSpec_OnClick;
 	};
 		UIDropDownMenu_AddButton(info);
-		quickSwapNum = "2"
+		favoriteNum = "2"
 
 end
 
@@ -112,40 +112,40 @@ function SPM:DropDownInitialize()
 	UIDropDownMenu_SetSelectedID(SpecMenuOptions_Menu);
 	UIDropDownMenu_SetWidth(SpecMenuOptions_Menu, 150);
 
-	UIDropDownMenu_Initialize(SpecMenuOptions_QuickSwap1, options_QuickSwap1_Initialize);
-	UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap1);
-	UIDropDownMenu_SetWidth(SpecMenuOptions_QuickSwap1, 150);
+	UIDropDownMenu_Initialize(SpecMenuOptions_favorite1, options_favorite1_Initialize);
+	UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite1);
+	UIDropDownMenu_SetWidth(SpecMenuOptions_favorite1, 150);
 
-	UIDropDownMenu_Initialize(SpecMenuOptions_QuickSwap2, SPM.Options_QuickSwap2_Initialize);
-	UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap2);
-	UIDropDownMenu_SetWidth(SpecMenuOptions_QuickSwap2, 150);
+	UIDropDownMenu_Initialize(SpecMenuOptions_favorite2, SPM.Options_favorite2_Initialize);
+	UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite2);
+	UIDropDownMenu_SetWidth(SpecMenuOptions_favorite2, 150);
 
 end
 
 local function SpecMenuOptions_UpateDB_OnClick()
 		--Updates the name of the Spec selected
-		if not IsSpellKnown(SPM.SpecInfo[1]) then return end
+		if not CA_IsSpellKnown(SPM.SpecInfo[1]) then return end
 		UIDropDownMenu_SetText(SpecMenuOptions_Menu, SPM.specName[SPM.optionsSpecNum]);
 end
 
 function SPM:OpenOptions()
 	if InterfaceOptionsFrame:GetWidth() < 850 then InterfaceOptionsFrame:SetWidth(850) end
-	if IsSpellKnown(SPM.SpecInfo[1]) then
+	if CA_IsSpellKnown(SPM.SpecInfo[1]) then
 			local menuID = SPM:SpecId();
 			UIDropDownMenu_SetSelectedID(SpecMenuOptions_Menu, menuID);
-			UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap1, SPM.db.Specs[menuID][1]);
-			UIDropDownMenu_SetSelectedID(SpecMenuOptions_QuickSwap2, SPM.db.Specs[menuID][2]);
+			UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite1, SPM.db.Specs[menuID][1]);
+			UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite2, SPM.db.Specs[menuID][2]);
 
 		if SPM.db.Specs[menuID][1] == "LastSpec" then
-			UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap1, specmenu_options_swap);
+			UIDropDownMenu_SetText(SpecMenuOptions_favorite1, specmenu_options_swap);
 		else
-			UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap1, SPM.specName[SPM.db.Specs[menuID][1]]);
+			UIDropDownMenu_SetText(SpecMenuOptions_favorite1, SPM.specName[SPM.db.Specs[menuID][1]]);
 		end
 
 		if SPM.db.Specs[menuID][2] == "LastSpec" then
-			UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap2, specmenu_options_swap);
+			UIDropDownMenu_SetText(SpecMenuOptions_favorite2, specmenu_options_swap);
 		else
-			UIDropDownMenu_SetText(SpecMenuOptions_QuickSwap2, SPM.specName[SPM.db.Specs[menuID][2]]);
+			UIDropDownMenu_SetText(SpecMenuOptions_favorite2, SPM.specName[SPM.db.Specs[menuID][2]]);
 		end
 
 		UIDropDownMenu_SetText(SpecMenuOptions_Menu, SPM.specName[menuID]);
@@ -171,19 +171,19 @@ end
 	specmenu.Lable:SetText("Select Specialization")
 	specmenu:SetScript("OnClick", SpecMenuOptions_UpateDB_OnClick);
 
-	local quickswap1 = CreateFrame("Button", "SpecMenuOptions_QuickSwap1", SpecMenuOptionsFrame, "UIDropDownMenuTemplate");
-    quickswap1:SetPoint("TOPLEFT", 15, -95);
-	quickswap1.Lable = quickswap1:CreateFontString(nil , "BORDER", "GameFontNormal")
-	quickswap1.Lable:SetJustifyH("LEFT")
-	quickswap1.Lable:SetPoint("LEFT", quickswap1, 190, 0)
-	quickswap1.Lable:SetText("QuickSwap Left Click")
+	local favorite1 = CreateFrame("Button", "SpecMenuOptions_favorite1", SpecMenuOptionsFrame, "UIDropDownMenuTemplate");
+    favorite1:SetPoint("TOPLEFT", 15, -95);
+	favorite1.Lable = favorite1:CreateFontString(nil , "BORDER", "GameFontNormal")
+	favorite1.Lable:SetJustifyH("LEFT")
+	favorite1.Lable:SetPoint("LEFT", favorite1, 190, 0)
+	favorite1.Lable:SetText("favorite Left Click")
 
-	local quickswap2 = CreateFrame("Button", "SpecMenuOptions_QuickSwap2", SpecMenuOptionsFrame, "UIDropDownMenuTemplate");
-    quickswap2:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 15, -130);
-	quickswap2.Lable = quickswap2:CreateFontString(nil , "BORDER", "GameFontNormal")
-	quickswap2.Lable:SetJustifyH("LEFT")
-	quickswap2.Lable:SetPoint("LEFT", quickswap2, 190, 0)
-	quickswap2.Lable:SetText("QuickSwap Right Click")
+	local favorite2 = CreateFrame("Button", "SpecMenuOptions_favorite2", SpecMenuOptionsFrame, "UIDropDownMenuTemplate");
+    favorite2:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 15, -130);
+	favorite2.Lable = favorite2:CreateFontString(nil , "BORDER", "GameFontNormal")
+	favorite2.Lable:SetJustifyH("LEFT")
+	favorite2.Lable:SetPoint("LEFT", favorite2, 190, 0)
+	favorite2.Lable:SetText("favorite Right Click")
 
 	local hideMenu = CreateFrame("CheckButton", "SpecMenuOptions_HideMenu", SpecMenuOptionsFrame, "UICheckButtonTemplate");
 	hideMenu:SetPoint("TOPLEFT", 15, -235);
@@ -210,13 +210,13 @@ end
 	hideHover:SetScript("OnClick", function()
 		if SPM.db.ShowMenuOnHover then
 			SpecMenuFrame_Menu:Show()
-            SpecMenuFrame_QuickSwap:Show()
+            SpecMenuFrame_Favorite:Show()
             SpecMenuFrame.icon:Show()
 			SpecMenuFrame.Text:Show()
 			SPM.db.ShowMenuOnHover = false
 		else
 			SpecMenuFrame_Menu:Hide()
-            SpecMenuFrame_QuickSwap:Hide()
+            SpecMenuFrame_Favorite:Hide()
             SpecMenuFrame.icon:Hide()
 			SpecMenuFrame.Text:Hide()
 			SPM.db.ShowMenuOnHover = true

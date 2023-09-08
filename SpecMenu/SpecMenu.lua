@@ -79,7 +79,7 @@ end
 --loads the table of specs by checking if you know the spell for the spec that is associated with it
 local function PopulateSpecDB()
     for i,v in ipairs(SPM.SpecInfo) do
-        if IsSpellKnown(v) and not SPM.db.Specs[i] then
+        if CA_IsSpellKnown(v) and not SPM.db.Specs[i] then
             SPM.db.Specs[i] = { 1, 1}
         end
     end
@@ -88,7 +88,7 @@ end
 --loads the table of enchant presets by checking if you know the spell for the preset that is associated with it
 local function populatePresetDB()
     for i,v in ipairs(SPM.PresetSpellIDs) do
-        if IsSpellKnown(v) and not SPM.db.EnchantPresets[i] then
+        if CA_IsSpellKnown(v) and not SPM.db.EnchantPresets[i] then
             SPM.db.EnchantPresets[i] = true;
         end
     end
@@ -115,7 +115,7 @@ end
 local function SpecMenu_DewdropClick(specNum)
     if specNum ~= SPM:SpecId() then
         if IsMounted() then Dismount() end
-        --used for the last spec quickswap selection
+        --used for the last spec favorite selection
         lastActiveSpec = SPM:SpecId();
         SPM.specNum = specNum
         SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec);
@@ -145,7 +145,7 @@ local function SpecMenu_DewdropRegister(self, frame)
             )
             local function addSpec()
                 for i,v in ipairs(SPM.SpecInfo) do
-                    if IsSpellKnown(v) then
+                    if CA_IsSpellKnown(v) then
                         local active = ""
                         if spellCheck(i,"spec") then active = " |cFF00FFFF(Active)" end 
                         if SPM.specName[i] then
@@ -231,7 +231,7 @@ local function SpecMenu_EnchantPreset_DewdropRegister(self)
             )
             local function addPreset()
                 for i,v in ipairs(SPM.PresetSpellIDs) do
-                    if IsSpellKnown(v) then
+                    if CA_IsSpellKnown(v) then
                         local active = ""
                         if spellCheck(i,"enchant") then active = " |cFF00FFFF(Active)" end
                         local text = SPM:GetPresetName(i)..active
@@ -265,7 +265,7 @@ local function SpecMenu_EnchantPreset_DewdropRegister(self)
 	)
 end
 
-local function quickSwap_OnClick(arg1)
+local function favorite_OnClick(arg1)
     local specNum;
     dewdrop:Close();
     if (arg1=="LeftButton") then
@@ -309,12 +309,12 @@ local function toggleMainButton(toggle)
     if SPM.db.ShowMenuOnHover then
         if toggle == "show" then
             SpecMenuFrame_Menu:Show()
-            SpecMenuFrame_QuickSwap:Show()
+            SpecMenuFrame_Favorite:Show()
             SpecMenuFrame.icon:Show()
             SpecMenuFrame.Text:Show()
         else
             SpecMenuFrame_Menu:Hide()
-            SpecMenuFrame_QuickSwap:Hide()
+            SpecMenuFrame_Favorite:Hide()
             SpecMenuFrame.icon:Hide()
             SpecMenuFrame.Text:Hide()
         end
@@ -326,13 +326,13 @@ local unlocked = false
 function SPM:UnlockFrame()
     if unlocked then
         SpecMenuFrame_Menu:Show()
-        SpecMenuFrame_QuickSwap:Show()
+        SpecMenuFrame_Favorite:Show()
         SpecMenuFrame.Highlight:Hide()
         unlocked = false
         GameTooltip:Hide()
     else
         SpecMenuFrame_Menu:Hide()
-        SpecMenuFrame_QuickSwap:Hide()
+        SpecMenuFrame_Favorite:Hide()
         SpecMenuFrame.Highlight:Show()
         unlocked = true
     end
@@ -397,21 +397,21 @@ end
         toggleMainButton("hide")
     end);
 
-    local quickswapbutton = CreateFrame("Button", "SpecMenuFrame_QuickSwap", SpecMenuFrame);
-    quickswapbutton:SetSize(70,34);
-    quickswapbutton:SetPoint("TOP", SpecMenuFrame, "TOP", 0, -2);
-    quickswapbutton:RegisterForClicks("LeftButtonDown", "RightButtonDown");
-    quickswapbutton:SetScript("OnClick", function(self, btnclick) quickSwap_OnClick(btnclick) end);
-    quickswapbutton.Highlight = quickswapbutton:CreateTexture(nil, "OVERLAY");
-    quickswapbutton.Highlight:SetSize(70,34);
-    quickswapbutton.Highlight:SetPoint("CENTER", quickswapbutton, 0, 0);
-    quickswapbutton.Highlight:SetTexture("Interface\\AddOns\\AwAddons\\Textures\\EnchOverhaul\\Slot2Selected");
-    quickswapbutton.Highlight:Hide();
-    quickswapbutton:SetScript("OnEnter", function(self)
+    local favoritebutton = CreateFrame("Button", "SpecMenuFrame_Favorite", SpecMenuFrame);
+    favoritebutton:SetSize(70,34);
+    favoritebutton:SetPoint("TOP", SpecMenuFrame, "TOP", 0, -2);
+    favoritebutton:RegisterForClicks("LeftButtonDown", "RightButtonDown");
+    favoritebutton:SetScript("OnClick", function(self, btnclick) favorite_OnClick(btnclick) end);
+    favoritebutton.Highlight = favoritebutton:CreateTexture(nil, "OVERLAY");
+    favoritebutton.Highlight:SetSize(70,34);
+    favoritebutton.Highlight:SetPoint("CENTER", favoritebutton, 0, 0);
+    favoritebutton.Highlight:SetTexture("Interface\\AddOns\\AwAddons\\Textures\\EnchOverhaul\\Slot2Selected");
+    favoritebutton.Highlight:Hide();
+    favoritebutton:SetScript("OnEnter", function(self)
         if not dewdrop:IsOpen() then
-            if not IsSpellKnown(SPM.SpecInfo[1]) then return end
+            if not CA_IsSpellKnown(SPM.SpecInfo[1]) then return end
             GameTooltip:SetOwner(self, "ANCHOR_TOP")
-            GameTooltip:AddLine("Quick Specs")
+            GameTooltip:AddLine("Favorite Specs")
             local leftTxt, rightTxt
             if SPM.db.Specs[SPM:SpecId()][1] == "LastSpec" then
                 leftTxt = "Last Spec"
@@ -427,10 +427,10 @@ end
             GameTooltip:Show()
         end
         toggleMainButton("show")
-        quickswapbutton.Highlight:Show();
+        favoritebutton.Highlight:Show();
     end)
-    quickswapbutton:SetScript("OnLeave", function()
-        quickswapbutton.Highlight:Hide();
+    favoritebutton:SetScript("OnLeave", function()
+        favoritebutton.Highlight:Hide();
         GameTooltip:Hide();
         toggleMainButton("hide")
     end);
