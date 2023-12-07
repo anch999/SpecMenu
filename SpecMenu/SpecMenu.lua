@@ -63,17 +63,21 @@ function SPM:GetPresetIcon(index)
 end
 
 --returns current active spec
-function SPM:SpecId()
-    return CA_GetActiveSpecId() +1
+function SPM:GetSpecId()
+    return SpecializationUtil.GetActiveSpecialization()
 end
 
 --returns current active enchant preset 
-function SPM:PresetId()
+function SPM:GetPresetId()
     return MysticEnchantManagerUtil.GetActivePreset()
 end
 
+function SPM:GetSpecInfo(i)
+    return SpecializationUtil.GetSpecializationInfo(i)
+end
+
 local function spellCheck(num,type)
-    if num == SPM:SpecId() and type == "spec" or num == SPM:PresetId() and type == "enchant" then return true end
+    if num == SPM:GetSpecId() and type == "spec" or num == SPM:GetPresetId() and type == "enchant" then return true end
 end
 
 --loads the table of specs by checking if you know the spell for the spec that is associated with it
@@ -95,18 +99,19 @@ local function lastSpec(event, ...)
         if lastActiveSpec ~= specNum then
             SPM.db.LastSpec = lastActiveSpec;
         end
-        mainframe.icon:SetTexture(SPM.specIcon[specNum] or defIcon);
-        minimap.icon = SPM.specIcon[specNum] or defIcon;
-        SPM:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED");
-        SPM:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTED");
+        local name, icon = SPM:GetSpecInfo(specNum)
+        mainframe.icon:SetTexture(icon)
+        minimap.icon = icon
+        SPM:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+        SPM:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTED")
     end
 end
 
 local function SpecMenu_DewdropClick(specNum)
-    if specNum ~= SPM:SpecId() then
+    if specNum ~= SPM:GetSpecId() then
         if IsMounted() then Dismount() end
         --used for the last spec favorite selection
-        lastActiveSpec = SPM:SpecId();
+        lastActiveSpec = SPM:GetSpecId();
         SPM.specNum = specNum
         SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec);
         --ascension function for loading specs
@@ -137,15 +142,12 @@ local function SpecMenu_DewdropRegister(self, frame)
                 for i,v in ipairs(SPM.SpecInfo) do
                     if CA_IsSpellKnown(v) then
                         local active = ""
-                        if spellCheck(i,"spec") then active = " |cFF00FFFF(Active)" end 
-                        if SPM.specName[i] then
-                            active = SPM.specName[i]..active
-                        else
-                            active = "Specialization "..i..active
-                        end
+                        local name, icon = SPM:GetSpecInfo(i)
+                        if spellCheck(i,"spec") then active = " |cFF00FFFF(Active)" end
+                        active = name..active
                         dewdrop:AddLine(
                                 'text', active,
-                                'icon', SPM.specIcon[i] or defIcon,
+                                'icon', icon,
                                 'textHeight', 12,
                                 'textWidth', 12,
                                 'func', SpecMenu_DewdropClick,
@@ -254,21 +256,21 @@ local function favorite_OnClick(arg1)
     local specNum;
     dewdrop:Close();
     if (arg1=="LeftButton") then
-        if SPM.db.Specs[SPM:SpecId()][1] == "LastSpec" then
+        if SPM.db.Specs[SPM:GetSpecId()][1] == "LastSpec" then
             specNum = SPM.db.LastSpec;
         else
-            specNum =  SPM.db.Specs[SPM:SpecId()][1]
+            specNum =  SPM.db.Specs[SPM:GetSpecId()][1]
         end
     elseif (arg1=="RightButton") then
-        if SPM.db.Specs[SPM:SpecId()][2] == "LastSpec" then
+        if SPM.db.Specs[SPM:GetSpecId()][2] == "LastSpec" then
             specNum = SPM.db.LastSpec;
         else
-        specNum =  SPM.db.Specs[SPM:SpecId()][2]
+        specNum =  SPM.db.Specs[SPM:GetSpecId()][2]
         end
     end
-    if specNum ~= SPM:SpecId() then
+    if specNum ~= SPM:GetSpecId() then
         if IsMounted() then Dismount(); end
-        lastActiveSpec = SPM:SpecId();
+        lastActiveSpec = SPM:GetSpecId();
         SPM.specNum = specNum
         SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec);
         local spell = SpecializationUtil.GetSpecializationSpell(specNum)
@@ -398,15 +400,15 @@ end
             GameTooltip:SetOwner(self, "ANCHOR_TOP")
             GameTooltip:AddLine("Favorite Specs")
             local leftTxt, rightTxt
-            if SPM.db.Specs[SPM:SpecId()][1] == "LastSpec" then
+            if SPM.db.Specs[SPM:GetSpecId()][1] == "LastSpec" then
                 leftTxt = "Last Spec"
             else
-                leftTxt = SPM.specName[SPM.db.Specs[SPM:SpecId()][1]] or ("Specialization "..SPM.db.Specs[SPM:SpecId()][1])
+                leftTxt = SPM:GetSpecInfo(SPM.db.Specs[SPM:GetSpecId()][1])
             end
-            if SPM.db.Specs[SPM:SpecId()][2] == "LastSpec" then
+            if SPM.db.Specs[SPM:GetSpecId()][2] == "LastSpec" then
                 rightTxt = "Last Spec"
             else
-                rightTxt = SPM.specName[SPM.db.Specs[SPM:SpecId()][2]] or ("Specialization "..SPM.db.Specs[SPM:SpecId()][2])
+                rightTxt = SPM:GetSpecInfo(SPM.db.Specs[SPM:GetSpecId()][2])
             end
             GameTooltip:AddDoubleLine("|cffffffff"..leftTxt,"|cffffffff"..rightTxt)
             GameTooltip:Show()
@@ -431,7 +433,20 @@ function SPM:OnInitialize()
     SPM.db = SpecMenuDB
     setupSettings(SPM.db)
     lastActiveSpec = SPM.db.LastSpec;
-    SPM.optionsSpecNum = SPM:SpecId();
+    SPM.optionsSpecNum = SPM:GetSpecId();
+    SPM:RegisterEvent("ADDON_LOADED")
+
+end
+
+function SPM:ADDON_LOADED(event, arg1, arg2, arg3)
+	-- setup for auction house window
+	if event == "ADDON_LOADED" and arg1 == "Ascension_CharacterAdvancement" then
+        CharacterAdvancementSideBarSpecListNineSlice:HookScript("OnHide", function()
+            local name, icon = SPM:GetSpecInfo(SPM:GetSpecId())
+            mainframe.icon:SetTexture(icon);
+            minimap.icon = icon;
+        end)
+	end
 end
 
 -- toggle the main button frame
@@ -466,16 +481,11 @@ function SPM:OnEnable()
         icon:Register('SpecMenu', minimap, SPM.map)
     end
 
-    SPM.specName = AscensionUI_CDB.CA2.SpecNamesCustom
-    SPM.specIcon = AscensionUI_CDB.CA2.SpecIconsCustom
     SPM.SpecInfo = SPEC_SWAP_SPELLS
-    mainframe.icon:SetTexture(SPM.specIcon[SPM:SpecId()] or defIcon);
-    minimap.icon = SPM.specIcon[SPM:SpecId()] or defIcon
+    local name, icon = SPM:GetSpecInfo(SPM:GetSpecId())
+    mainframe.icon:SetTexture(icon);
+    minimap.icon = icon
     PopulateSpecDB()
-    CA2.Scroll_SpecList.PopupController.frame:HookScript("OnHide", function()
-        mainframe.icon:SetTexture(SPM.specIcon[SPM:SpecId()] or defIcon);
-        minimap.icon = SPM.specIcon[SPM:SpecId()] or defIcon;
-    end)
     SPM:DropDownInitialize()
     toggleMainButton("hide")
 
@@ -516,12 +526,8 @@ function SPM:OnEnter(self)
     GameTooltip:SetOwner(self, 'ANCHOR_NONE')
     GameTooltip:SetPoint(GetTipAnchor(self))
     GameTooltip:ClearLines()
-    local specID, presetID, presetName, specName = SPM:SpecId(), SPM:PresetId()
-    if SPM.specName[specID] then
-        specName = "|cffffffff"..SPM.specName[specID]
-    else
-        specName = "|cffffffffSpecialization "..specID
-    end
+    local specID, presetID, presetName, specName = SPM:GetSpecId(), SPM:GetPresetId()
+    specName = "|cffffffff"..SPM:GetSpecInfo(specID)
     presetName = "|cffffffff"..SPM:GetPresetName(presetID)
     GameTooltip:AddLine("SpecMenu")
     GameTooltip:AddDoubleLine("Active Spec:", specName)

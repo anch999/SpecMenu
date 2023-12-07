@@ -34,7 +34,7 @@ local function options_Menu_Initialize()
     local info;
 	for i,_ in ipairs(SPM.db.Specs) do
 				info = {
-					text = SPM.specName[i] or ("Specialization "..i);
+					text = SPM:GetSpecInfo(i);
 					func = options_Menu_OnClick;
 				};
 					UIDropDownMenu_AddButton(info);
@@ -64,7 +64,7 @@ local function options_favorite1_Initialize()
 	local info;
 	for i,_ in ipairs(SPM.db.Specs) do
 		info = {
-					text = SPM.specName[i] or ("Specialization "..i);
+					text = SPM:GetSpecInfo(i);
 					func = options_favorite1_OnClick;
 				};
 					UIDropDownMenu_AddButton(info);
@@ -90,7 +90,7 @@ function SPM:Options_favorite2_Initialize()
 	local info;
 	for i,_ in ipairs(SPM.db.Specs) do
 		info = {
-			text = SPM.specName[i] or ("Specialization "..i);
+			text = SPM:GetSpecInfo(i);
 			func = options_favorite2_OnClick;
 		};
 			UIDropDownMenu_AddButton(info);
@@ -125,13 +125,13 @@ end
 local function SpecMenuOptions_UpateDB_OnClick()
 		--Updates the name of the Spec selected
 		if not CA_IsSpellKnown(SPM.SpecInfo[1]) then return end
-		UIDropDownMenu_SetText(SpecMenuOptions_Menu, SPM.specName[SPM.optionsSpecNum]);
+		UIDropDownMenu_SetText(SpecMenuOptions_Menu, SPM:GetSpecInfo(SPM.optionsSpecNum));
 end
 
 function SPM:OpenOptions()
 	if InterfaceOptionsFrame:GetWidth() < 850 then InterfaceOptionsFrame:SetWidth(850) end
 	if CA_IsSpellKnown(SPM.SpecInfo[1]) then
-			local menuID = SPM:SpecId();
+			local menuID = SPM:GetSpecId();
 			UIDropDownMenu_SetSelectedID(SpecMenuOptions_Menu, menuID);
 			UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite1, SPM.db.Specs[menuID][1]);
 			UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite2, SPM.db.Specs[menuID][2]);
@@ -139,16 +139,16 @@ function SPM:OpenOptions()
 		if SPM.db.Specs[menuID][1] == "LastSpec" then
 			UIDropDownMenu_SetText(SpecMenuOptions_favorite1, specmenu_options_swap);
 		else
-			UIDropDownMenu_SetText(SpecMenuOptions_favorite1, SPM.specName[SPM.db.Specs[menuID][1]]);
+			UIDropDownMenu_SetText(SpecMenuOptions_favorite1, SPM:GetSpecInfo(SPM.db.Specs[menuID][1]));
 		end
 
 		if SPM.db.Specs[menuID][2] == "LastSpec" then
 			UIDropDownMenu_SetText(SpecMenuOptions_favorite2, specmenu_options_swap);
 		else
-			UIDropDownMenu_SetText(SpecMenuOptions_favorite2, SPM.specName[SPM.db.Specs[menuID][2]]);
+			UIDropDownMenu_SetText(SpecMenuOptions_favorite2, SPM:GetSpecInfo(SPM.db.Specs[menuID][2]));
 		end
 
-		UIDropDownMenu_SetText(SpecMenuOptions_Menu, SPM.specName[menuID]);
+		UIDropDownMenu_SetText(SpecMenuOptions_Menu, SPM:GetSpecInfo(menuID));
 		SPM.optionsSpecNum = menuID;
 	end
 end
