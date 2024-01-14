@@ -3,6 +3,12 @@ local favoriteNum = ""
 local lastSpecPos
 local SPM = LibStub("AceAddon-3.0"):GetAddon("SpecMenu")
 
+--Borrowed from Atlas, thanks Dan!
+local function round(num, idp)
+	local mult = 10 ^ (idp or 0)
+	return math.floor(num * mult + 0.5) / mult
+ end
+
 function SPM:Options_Toggle()
     if InterfaceOptionsFrame:IsVisible() then
 		InterfaceOptionsFrame:Hide()
@@ -186,7 +192,7 @@ end
 	favorite2.Lable:SetText("favorite Right Click")
 
 	local hideMenu = CreateFrame("CheckButton", "SpecMenuOptions_HideMenu", SpecMenuOptionsFrame, "UICheckButtonTemplate")
-	hideMenu:SetPoint("TOPLEFT", 15, -235)
+	hideMenu:SetPoint("TOPLEFT", 15, -165)
 	hideMenu.Lable = hideMenu:CreateFontString(nil , "BORDER", "GameFontNormal")
 	hideMenu.Lable:SetJustifyH("LEFT")
 	hideMenu.Lable:SetPoint("LEFT", 30, 0)
@@ -202,7 +208,7 @@ end
 	end)
 
 	local hideHover = CreateFrame("CheckButton", "SpecMenuOptions_ShowOnHover", SpecMenuOptionsFrame, "UICheckButtonTemplate")
-	hideHover:SetPoint("TOPLEFT", 15, -270)
+	hideHover:SetPoint("TOPLEFT", 15, -195)
 	hideHover.Lable = hideHover:CreateFontString(nil , "BORDER", "GameFontNormal")
 	hideHover.Lable:SetJustifyH("LEFT")
 	hideHover.Lable:SetPoint("LEFT", 30, 0)
@@ -225,7 +231,7 @@ end
 	end)
 
 	local hideMinimap = CreateFrame("CheckButton", "SpecMenuOptions_HideMinimap", SpecMenuOptionsFrame, "UICheckButtonTemplate")
-	hideMinimap:SetPoint("TOPLEFT", 15, -305)
+	hideMinimap:SetPoint("TOPLEFT", 15, -230)
 	hideMinimap.Lable = hideMinimap:CreateFontString(nil , "BORDER", "GameFontNormal")
 	hideMinimap.Lable:SetJustifyH("LEFT")
 	hideMinimap.Lable:SetPoint("LEFT", 30, 0)
@@ -233,7 +239,7 @@ end
 	hideMinimap:SetScript("OnClick", function() SPM:ToggleMinimap() end)
 	
 	local hideSpecDisplay = CreateFrame("CheckButton", "SpecMenuOptions_HideMinimap", SpecMenuOptionsFrame, "UICheckButtonTemplate")
-	hideSpecDisplay:SetPoint("TOPLEFT", 15, -340)
+	hideSpecDisplay:SetPoint("TOPLEFT", 15, -265)
 	hideSpecDisplay.Lable = hideSpecDisplay:CreateFontString(nil , "BORDER", "GameFontNormal")
 	hideSpecDisplay.Lable:SetJustifyH("LEFT")
 	hideSpecDisplay.Lable:SetPoint("LEFT", 30, 0)
@@ -245,5 +251,41 @@ end
 			SpecDisplayFrame:Hide()
 		else
 			SpecDisplayFrame:Show()
+			SpecDisplayFrame:SetScale(SPM.db.SpecDisplayScale)
 		end
 	end)
+
+	local hideSpecDisplayBackground = CreateFrame("CheckButton", "SpecMenuOptions_HideMinimap", SpecMenuOptionsFrame, "UICheckButtonTemplate")
+	hideSpecDisplayBackground:SetPoint("TOPLEFT", 15, -300)
+	hideSpecDisplayBackground.Lable = hideSpecDisplayBackground:CreateFontString(nil , "BORDER", "GameFontNormal")
+	hideSpecDisplayBackground.Lable:SetJustifyH("LEFT")
+	hideSpecDisplayBackground.Lable:SetPoint("LEFT", 30, 0)
+	hideSpecDisplayBackground.Lable:SetText("Hide Spec/Enchant Display Background")
+	hideSpecDisplayBackground:SetScript("OnClick", function()
+		SPM.db.hideSpecDisplayBackground = not SPM.db.hideSpecDisplayBackground
+		if SPM.db.hideSpecDisplayBackground then
+			SpecDisplayFrame:SetBackdropColor(0, 0, 0, 0)
+			SpecDisplayFrame:SetBackdropBorderColor(0, 0, 0, 0)
+		else
+			SpecDisplayFrame:SetBackdropColor(0, 0, 0, 5)
+			SpecDisplayFrame:SetBackdropBorderColor(0, 0, 0, 5)
+		end
+	end)
+
+	local displayScale = CreateFrame("Slider", "SpecMenuOptionsDisplayScale", SpecMenuOptionsFrame,"OptionsSliderTemplate")
+		displayScale:SetSize(240,16)
+		displayScale:SetPoint("TOPLEFT", 15,-355)
+		displayScale:SetMinMaxValues(0.25, 1.5)
+		_G[displayScale:GetName().."Text"]:SetText("Spec Display Scale: ".." ("..round(displayScale:GetValue(),2)..")")
+		_G[displayScale:GetName().."Low"]:SetText(0.25)
+		_G[displayScale:GetName().."High"]:SetText(1.5)
+		displayScale:SetValueStep(0.01)
+		displayScale:SetScript("OnShow", function() displayScale:SetValue(SPM.db.SpecDisplayScale) end)
+        displayScale:SetScript("OnValueChanged", function()
+			_G[displayScale:GetName().."Text"]:SetText("Spec Display Scale: ".." ("..round(displayScale:GetValue(),2)..")")
+            SPM.db.SpecDisplayScale = displayScale:GetValue()
+			if SpecDisplayFrame then
+            	SpecDisplayFrame:SetScale(SPM.db.SpecDisplayScale)
+				SPM:SetDisplayText()
+			end
+        end)

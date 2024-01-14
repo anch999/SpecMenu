@@ -94,7 +94,7 @@ Done this way to stop it messing up last spec if you stop the cast mid way
  ]]
 local function lastSpec(event, ...)
     local target, spell = ...
-        if target == "player" and (spell:match("Specialization") or spell == "Activate Mystic Enchant Preset") then
+        if event == "ASCENSION_CA_SPECIALIZATION_ACTIVE_ID_CHANGED" or (target == "player" and  spell == "Activate Mystic Enchant Preset") then
         local specNum = SPM.specNum
         if lastActiveSpec ~= specNum then
             SPM.db.LastSpec = lastActiveSpec
@@ -487,6 +487,7 @@ function SPM:OnEnable()
     toggleMainButton("hide")
     SPM:CreateSpecDisplay()
     SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec)
+    SPM:RegisterEvent("ASCENSION_CA_SPECIALIZATION_ACTIVE_ID_CHANGED", lastSpec)
 
     --Enable the use of /me or /mysticextended to open the loot browser
     SLASH_SPECMENU1 = "/specmenu"
@@ -549,14 +550,14 @@ function SPM:ToggleMinimap()
 end
 
 function SPM:SetDisplayText()
-    local specName = "Active Spec: |cffffffff"..SPM:GetSpecInfo(SPM:GetSpecId())
-    local presetName = "Active Enchant Spec: |cffffffff"..SPM:GetPresetName(SPM:GetPresetId())
+    local specName = "S: |cffffffff"..SPM:GetSpecInfo(SPM:GetSpecId())
+    local presetName = "E: |cffffffff"..SPM:GetPresetName(SPM:GetPresetId())
     SpecDisplayFrame.text:SetText(specName)
     SpecDisplayFrame.text2:SetText(presetName)
     if SpecDisplayFrame.text:GetWidth() > SpecDisplayFrame.text2:GetWidth() then
-        SpecDisplayFrame:SetWidth(SpecDisplayFrame.text:GetWidth() +20)
+        SpecDisplayFrame:SetWidth(SpecDisplayFrame.text:GetWidth() +30)
     else
-        SpecDisplayFrame:SetWidth(SpecDisplayFrame.text2:GetWidth() +20)
+        SpecDisplayFrame:SetWidth(SpecDisplayFrame.text2:GetWidth() +30)
     end
 end
 
@@ -576,8 +577,13 @@ function SPM:CreateSpecDisplay()
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 8,
         insets = { left = 1, right = 1, top = 1, bottom = 1 },
     })
-    displayframe:SetBackdropColor(0, 0, 0, 5)
-    displayframe:SetBackdropBorderColor(0, 0, 0, 5)
+    if SPM.db.hideSpecDisplayBackground then
+        displayframe:SetBackdropColor(0, 0, 0, 0)
+        displayframe:SetBackdropBorderColor(0, 0, 0, 0)
+    else
+        displayframe:SetBackdropColor(0, 0, 0, 5)
+        displayframe:SetBackdropBorderColor(0, 0, 0, 5)
+    end
 
     displayframe:EnableMouse(true)
     displayframe:RegisterForDrag("LeftButton")
@@ -608,6 +614,7 @@ function SPM:CreateSpecDisplay()
         displayframe:ClearAllPoints()
         displayframe:SetPoint("CENTER", UIParent)
     end
+    displayframe:SetScale(SPM.db.SpecDisplayScale or 1)
     displayframe:Show()
     SPM.specDisplayLoaded = true
 end
