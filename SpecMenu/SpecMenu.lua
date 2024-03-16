@@ -1,28 +1,18 @@
-SpecMenu = LibStub("AceAddon-3.0"):NewAddon("SpecMenu", "AceConsole-3.0", "AceTimer-3.0", "AceEvent-3.0", "AceComm-3.0", "AceSerializer-3.0")
-local SPM = LibStub("AceAddon-3.0"):GetAddon("SpecMenu")
-local addonName = ...
-local specbutton, lastActiveSpec, mainframe
-local dewdrop = AceLibrary("Dewdrop-2.0")
-local defIcon = "Interface\\Icons\\inv_misc_book_16"
-local icon = LibStub('LibDBIcon-1.0')
+local SPM = LibStub("AceAddon-3.0"):NewAddon("SpecMenu", "AceConsole-3.0", "AceTimer-3.0", "AceEvent-3.0", "AceComm-3.0", "AceSerializer-3.0")
+SPM.dewdrop = AceLibrary("Dewdrop-2.0")
 local CYAN =  "|cff00ffff"
-local 
-SPECMENU_MINIMAP = LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject(addonName, {
-    type = 'data source',
-    text = "SpecMenu",
-    icon = defIcon,
-  })
-local minimap = SPECMENU_MINIMAP
-
+local WHITE = "|cffFFFFFF"
 
 --Set Savedvariables defaults
 local DefaultSettings  = {
     { TableName = "Specs", {} },
     { TableName = "EnchantPresets", {} },
     { TableName = "LastSpec", 1 },
-    { TableName = "ShowMenuOnHover", false, Frame = "SpecMenuFrame",CheckBox = "SpecMenuOptions_ShowOnHover" },
+    { TableName = "ShowMenuOnHover", false, Frame = "SpecMenuFrame", CheckBox = "SpecMenuOptions_ShowOnHover" },
     { TableName = "HideMenu", false, Frame = "SpecMenuFrame", CheckBox = "SpecMenuOptions_HideMenu"},
     { TableName = "minimap", false, CheckBox = "SpecMenuOptions_HideMinimap"},
+    { TableName = "autoMenu", false, CheckBox = "SpecMenuOptions_AutoMenu"},
+    { TableName = "txtSize", 12},
 }
 
 --[[ TableName = Name of the saved setting
@@ -54,102 +44,72 @@ local function setupSettings(db)
     end
 end
 
-function SPM:GetPresetName(index)
-    return MysticEnchantManagerUtil.GetPresetName(index)
-end
 
-function SPM:GetPresetIcon(index)
-    return MysticEnchantManagerUtil.GetPresetIcon(index)
-end
 
---returns current active spec
-function SPM:GetSpecId()
-    return SpecializationUtil.GetActiveSpecialization()
-end
-
---returns current active enchant preset 
-function SPM:GetPresetId()
-    return MysticEnchantManagerUtil.GetActivePreset()
-end
-
-function SPM:GetSpecInfo(i)
-    return SpecializationUtil.GetSpecializationInfo(i)
-end
-
-local function spellCheck(num,type)
-    if num == SPM:GetSpecId() and type == "spec" or num == SPM:GetPresetId() and type == "enchant" then return true end
-end
-
---loads the table of specs by checking if you know the spell for the spec that is associated with it
-local function PopulateSpecDB()
-    for i,v in ipairs(SPM.SpecInfo) do
-        if CA_IsSpellKnown(v) and not SPM.db.Specs[i] then
-            SPM.db.Specs[i] = { 1, 1}
-        end
-    end
-end
 
 --[[ checks to see if current spec is not last spec.
 Done this way to stop it messing up last spec if you stop the cast mid way
  ]]
-local function lastSpec(event, ...)
+local function SpecMenu_LastSpec(event, ...)
     local target, spell = ...
-        if event == "ASCENSION_CA_SPECIALIZATION_ACTIVE_ID_CHANGED" or (target == "player" and  spell == "Activate Mystic Enchant Preset") then
-        local specNum = SPM.specNum
-        if lastActiveSpec ~= specNum then
-            SPM.db.LastSpec = lastActiveSpec
+        if event == "ASCENSION_CA_SPECIALIZATION_ACTIVE_ID_CHANGED" or (event == "UNIT_SPELLCAST_SUCCEEDED" and target == "player" and  spell == "Activate Mystic Enchant Preset") then
+            local specNum = SPM.specNum
+            if SPM.lastActiveSpec ~= specNum then
+                SPM.db.LastSpec = SPM.lastActiveSpec
+            end
+            local name, icon = SPM:GetSpecInfo(specNum)
+            SpecMenuFrame.icon:SetTexture(icon)
+            SPM.minimap.icon = icon
+            Timer.After(0.5, SPM.SetDisplayText)
         end
-        local name, icon = SPM:GetSpecInfo(specNum)
-        mainframe.icon:SetTexture(icon)
-        minimap.icon = icon
-        Timer.After(0.5, SPM.SetDisplayText)
-    end
 end
 
-local function SpecMenu_DewdropClick(specNum)
-    if specNum ~= SPM:GetSpecId() then
+function SPM:DewdropClick(specNum)
+    local currentSpecID = self:GetSpecId()
+    if specNum ~= currentSpecID then
         if IsMounted() then Dismount() end
         --used for the last spec favorite selection
-        lastActiveSpec = SPM:GetSpecId()
-        SPM.specNum = specNum
+        self.lastActiveSpec = currentSpecID
+        self.specNum = specNum
         --ascension function for loading specs
         local spell = SpecializationUtil.GetSpecializationSpell(specNum)
         CastSpecialSpell(spell)
     else
         DEFAULT_CHAT_FRAME:AddMessage(CYAN.."Spec is already active")
     end
-    dewdrop:Close()
+    self.dewdrop:Close()
 end
 
+local hookWorldFrame
 --sets up the drop down menu for specs
-local function SpecMenu_DewdropRegister(self, frame)
-    PopulateSpecDB()
-    dewdrop:Register(self,
+function SPM:DewdropRegister(button, showUnlock)
+    if self.dewdrop:IsOpen(button) then self.dewdrop:Close() return end
+    self:PopulateSpecDB()
+    self.dewdrop:Register(button,
         'point', function(parent)
             return "TOP", "BOTTOM"
         end,
         'children', function(level, value)
-            dewdrop:AddLine(
+            self.dewdrop:AddLine(
                 'text', "|cffffff00Specializations",
-                'textHeight', 12,
-                'textWidth', 12,
+                'textHeight', self.db.txtSize,
+                'textWidth', self.db.txtSize,
                 'isTitle', true,
                 'notCheckable', true
             )
             local function addSpec()
-                for i,v in ipairs(SPM.SpecInfo) do
+                for i,v in ipairs(self.SpecInfo) do
                     if CA_IsSpellKnown(v) then
                         local active = ""
-                        local name, icon = SPM:GetSpecInfo(i)
-                        if spellCheck(i,"spec") then active = " |cFF00FFFF(Active)" end
+                        local name, icon = self:GetSpecInfo(i)
+                        if self:SpellCheck(i,"spec") then active = " |cFF00FFFF(Active)" end
                         active = name..active
-                        dewdrop:AddLine(
+                        self.dewdrop:AddLine(
                                 'text', active,
                                 'icon', icon,
-                                'textHeight', 12,
-                                'textWidth', 12,
-                                'func', SpecMenu_DewdropClick,
-                                'arg1', i
+                                'textHeight', self.db.txtSize,
+                                'textWidth', self.db.txtSize,
+                                'func', function() SPM:DewdropClick(i) end
                         )
                     else
                         return
@@ -157,41 +117,51 @@ local function SpecMenu_DewdropRegister(self, frame)
                 end
             end
             addSpec()
-            dewdrop:AddLine()
-            if frame == "SpecMenuFrame_Menu" then
-                dewdrop:AddLine(
+            self:AddDividerLine(35)
+            if showUnlock then
+                self.dewdrop:AddLine(
                     'text', "Unlock Frame",
-                    'textHeight', 12,
-                    'textWidth', 12,
-                    'func', SPM.UnlockFrame,
+                    'textHeight', self.db.txtSize,
+                    'textWidth', self.db.txtSize,
+                    'func', self.UnlockFrame,
                     'notCheckable', true,
                     'closeWhenClicked', true
                 )
             end
-            dewdrop:AddLine(
+            self.dewdrop:AddLine(
 				'text', "Options",
-                'textHeight', 12,
-                'textWidth', 12,
-				'func', SPM.Options_Toggle,
+                'textHeight', self.db.txtSize,
+                'textWidth', self.db.txtSize,
+				'func', self.Options_Toggle,
 				'notCheckable', true,
                 'closeWhenClicked', true
 			)
-            dewdrop:AddLine(
+            self.dewdrop:AddLine(
 				'text', "Close Menu",
                 'textR', 0,
                 'textG', 1,
                 'textB', 1,
-                'textHeight', 12,
-                'textWidth', 12,
+                'textHeight', self.db.txtSize,
+                'textWidth', self.db.txtSize,
 				'closeWhenClicked', true,
 				'notCheckable', true
 			)
 		end,
 		'dontHook', true
 	)
+    self.dewdrop:Open(button)
+
+    if not hookWorldFrame then
+        WorldFrame:HookScript("OnEnter", function()
+            if self.dewdrop:IsOpen() then
+                self.dewdrop:Close()
+            end
+        end)
+        hookWorldFrame = true
+    end
 end
 
-local function SpecMenu_EnchantPreset_DewdropClick(presetID)
+function SPM:EnchantPreset_DewdropClick(presetID)
     if IsMounted() then Dismount() end
         --ascension function for changing enchant presets
             if presetID then
@@ -201,44 +171,45 @@ local function SpecMenu_EnchantPreset_DewdropClick(presetID)
                     DEFAULT_CHAT_FRAME:AddMessage(CYAN.."Enchant Set is already active")
                 end
             end
-        dewdrop:Close()
+        self.dewdrop:Close()
 end
 
 --sets up the drop down menu for enchant presets
-local function SpecMenu_EnchantPreset_DewdropRegister(self)
-    dewdrop:Register(self,
+function SPM:EnchantPreset_DewdropRegister(button)
+    if self.dewdrop:IsOpen(button) then self.dewdrop:Close() return end
+    self.dewdrop:Register(button,
         'point', function(parent)
             return "TOP", "BOTTOM"
         end,
         'children', function(level, value)
-            dewdrop:AddLine(
+            self.dewdrop:AddLine(
                 'text', "|cffffff00Enchant Sets",
-                'textHeight', 12,
-                'textWidth', 12,
+                'textHeight', self.db.txtSize,
+                'textWidth', self.db.txtSize,
                 'isTitle', true,
                 'notCheckable', true
             )
             local function addPreset()
                 for i = 1, C_MysticEnchantPreset.GetNumPresets() do
                     local active = ""
-                    if spellCheck(i,"enchant") then active = " |cFF00FFFF(Active)" end
-                    local text = SPM:GetPresetName(i)..active
-                    local icon = SPM:GetPresetIcon(i)
-                    dewdrop:AddLine(
+                    if self:SpellCheck(i,"enchant") then active = " |cFF00FFFF(Active)" end
+                    local text = self:GetPresetName(i)..active
+                    local icon = self:GetPresetIcon(i)
+                    self.dewdrop:AddLine(
                             'text', text,
-                            'textHeight', 12,
-                            'textWidth', 12,
+                            'textHeight', self.db.txtSize,
+                            'textWidth', self.db.txtSize,
                             'icon', icon,
-                            'func', SpecMenu_EnchantPreset_DewdropClick,
-                            'arg1', i
+                            'func', function() SPM:EnchantPreset_DewdropClick(i) end
                     )
                 end
             end
             addPreset()
-            dewdrop:AddLine(
+            self:AddDividerLine(35)
+            self.dewdrop:AddLine(
 		    	'text', "Close Menu",
-                'textHeight', 12,
-                'textWidth', 12,
+                'textHeight', self.db.txtSize,
+                'textWidth', self.db.txtSize,
                 'textR', 0,
                 'textG', 1,
                 'textB', 1,
@@ -248,28 +219,29 @@ local function SpecMenu_EnchantPreset_DewdropRegister(self)
 		end,
 		'dontHook', true
 	)
+    self.dewdrop:Open(button)
 end
 
-local function favorite_OnClick(arg1)
+function SPM:Favorite_OnClick(arg1)
     local specNum
-    dewdrop:Close()
+    self.dewdrop:Close()
     if (arg1=="LeftButton") then
-        if SPM.db.Specs[SPM:GetSpecId()][1] == "LastSpec" then
-            specNum = SPM.db.LastSpec
+        if self.db.Specs[self:GetSpecId()][1] == "LastSpec" then
+            specNum = self.db.LastSpec
         else
-            specNum =  SPM.db.Specs[SPM:GetSpecId()][1]
+            specNum =  self.db.Specs[self:GetSpecId()][1]
         end
     elseif (arg1=="RightButton") then
-        if SPM.db.Specs[SPM:GetSpecId()][2] == "LastSpec" then
-            specNum = SPM.db.LastSpec
+        if self.db.Specs[self:GetSpecId()][2] == "LastSpec" then
+            specNum = self.db.LastSpec
         else
-        specNum =  SPM.db.Specs[SPM:GetSpecId()][2]
+        specNum =  self.db.Specs[self:GetSpecId()][2]
         end
     end
-    if specNum ~= SPM:GetSpecId() then
+    if specNum ~= self:GetSpecId() then
         if IsMounted() then Dismount() end
-        lastActiveSpec = SPM:GetSpecId()
-        SPM.specNum = specNum
+        self.lastActiveSpec = self:GetSpecId()
+        self.specNum = specNum
         local spell = SpecializationUtil.GetSpecializationSpell(specNum)
         CastSpecialSpell(spell)
     else
@@ -277,20 +249,17 @@ local function favorite_OnClick(arg1)
     end
 end
 
-local function mainButton_OnClick(self, arg1)
-    if dewdrop:IsOpen() then SPM:OnEnter(self) dewdrop:Close() return end
+function SPM:MainButton_OnClick(button, arg1)
     GameTooltip:Hide()
     if (arg1=="LeftButton") then
-        SpecMenu_DewdropRegister(self, "SpecMenuFrame_Menu")
-        dewdrop:Open(self)
+        self:DewdropRegister(button, true)
     elseif (arg1=="RightButton") then
-        SpecMenu_EnchantPreset_DewdropRegister(self)
-        dewdrop:Open(self)
+        self:EnchantPreset_DewdropRegister(button)
     end
 end
 
-local function toggleMainButton(toggle)
-    if SPM.db.ShowMenuOnHover then
+function SPM:ToggleMainButton(toggle)
+    if self.db.ShowMenuOnHover then
         if toggle == "show" then
             SpecMenuFrame_Menu:Show()
             SpecMenuFrame_Favorite:Show()
@@ -306,148 +275,49 @@ local function toggleMainButton(toggle)
 end
 
 -- Used to show highlight as a frame mover
-local unlocked = false
 function SPM:UnlockFrame()
-    if unlocked then
+    if SPM.unlocked then
         SpecMenuFrame_Menu:Show()
         SpecMenuFrame_Favorite:Show()
         SpecMenuFrame.Highlight:Hide()
-        unlocked = false
+        SPM.unlocked = false
         GameTooltip:Hide()
     else
         SpecMenuFrame_Menu:Hide()
         SpecMenuFrame_Favorite:Hide()
         SpecMenuFrame.Highlight:Show()
-        unlocked = true
+        SPM.unlocked = true
     end
 end
 
---Creates the main interface
-	mainframe = CreateFrame("Button", "SpecMenuFrame", UIParent, nil)
-    mainframe:SetSize(70,70)
-    mainframe:EnableMouse(true)
-    mainframe:RegisterForDrag("LeftButton")
-    mainframe:SetScript("OnDragStart", function(self) mainframe:StartMoving() end)
-    mainframe:SetScript("OnDragStop", function(self) mainframe:StopMovingOrSizing() end)
-    mainframe:SetMovable(true)
-    mainframe:RegisterForClicks("RightButtonDown")
-    mainframe:SetScript("OnClick", function(self, btnclick) if unlocked then SPM:UnlockFrame() end end)
-    mainframe.icon = mainframe:CreateTexture(nil, "ARTWORK")
-    mainframe.icon:SetSize(55,55)
-    mainframe.icon:SetPoint("CENTER", mainframe,"CENTER",0,0)
-    mainframe.Text = mainframe:CreateFontString()
-    mainframe.Text:SetFont("Fonts\\FRIZQT__.TTF", 13)
-    mainframe.Text:SetFontObject(GameFontNormal)
-    mainframe.Text:SetText("|cffffffffSpec\nMenu")
-    mainframe.Text:SetPoint("CENTER", mainframe.icon, "CENTER", 0, 0)
-    mainframe.Highlight = mainframe:CreateTexture(nil, "OVERLAY")
-    mainframe.Highlight:SetSize(70,70)
-    mainframe.Highlight:SetPoint("CENTER", mainframe, 0, 0)
-    mainframe.Highlight:SetTexture("Interface\\AddOns\\AwAddons\\Textures\\EnchOverhaul\\Slot2Selected")
-    mainframe.Highlight:Hide()
-    mainframe:Hide()
-    mainframe:SetScript("OnEnter", function(self) 
-        if unlocked then
-            GameTooltip:SetOwner(self, "ANCHOR_TOP")
-            GameTooltip:AddLine("Left click to drag")
-            GameTooltip:AddLine("Right click to lock frame")
-            GameTooltip:Show()
-        else
-            toggleMainButton("show")
-        end
-    end)
-    mainframe:SetScript("OnLeave", function() GameTooltip:Hide() end)
-
-	specbutton = CreateFrame("Button", "SpecMenuFrame_Menu", SpecMenuFrame)
-    specbutton:SetSize(70,34)
-    specbutton:SetPoint("BOTTOM", SpecMenuFrame, "BOTTOM", 0, 2)
-    specbutton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
-    specbutton:SetScript("OnClick", function(self, btnclick) mainButton_OnClick(self, btnclick) end)
-    specbutton.Highlight = specbutton:CreateTexture(nil, "OVERLAY")
-    specbutton.Highlight:SetSize(70,34)
-    specbutton.Highlight:SetPoint("CENTER", specbutton, 0, 0)
-    specbutton.Highlight:SetTexture("Interface\\AddOns\\AwAddons\\Textures\\EnchOverhaul\\Slot2Selected")
-    specbutton.Highlight:Hide()
-    specbutton:SetScript("OnEnter", function(self)
-        if not dewdrop:IsOpen() then
-        SPM:OnEnter(self)
-        end
-        specbutton.Highlight:Show()
-        toggleMainButton("show")
-    end)
-    specbutton:SetScript("OnLeave", function()
-        specbutton.Highlight:Hide()
-        GameTooltip:Hide()
-        toggleMainButton("hide")
-    end)
-
-    local favoritebutton = CreateFrame("Button", "SpecMenuFrame_Favorite", SpecMenuFrame)
-    favoritebutton:SetSize(70,34)
-    favoritebutton:SetPoint("TOP", SpecMenuFrame, "TOP", 0, -2)
-    favoritebutton:RegisterForClicks("LeftButtonDown", "RightButtonDown")
-    favoritebutton:SetScript("OnClick", function(self, btnclick) favorite_OnClick(btnclick) end)
-    favoritebutton.Highlight = favoritebutton:CreateTexture(nil, "OVERLAY")
-    favoritebutton.Highlight:SetSize(70,34)
-    favoritebutton.Highlight:SetPoint("CENTER", favoritebutton, 0, 0)
-    favoritebutton.Highlight:SetTexture("Interface\\AddOns\\AwAddons\\Textures\\EnchOverhaul\\Slot2Selected")
-    favoritebutton.Highlight:Hide()
-    favoritebutton:SetScript("OnEnter", function(self)
-        if not dewdrop:IsOpen() then
-            if not CA_IsSpellKnown(SPM.SpecInfo[1]) then return end
-            GameTooltip:SetOwner(self, "ANCHOR_TOP")
-            GameTooltip:AddLine("Favorite Specs")
-            local leftTxt, rightTxt
-            if SPM.db.Specs[SPM:GetSpecId()][1] == "LastSpec" then
-                leftTxt = "Last Spec"
-            else
-                leftTxt = SPM:GetSpecInfo(SPM.db.Specs[SPM:GetSpecId()][1])
-            end
-            if SPM.db.Specs[SPM:GetSpecId()][2] == "LastSpec" then
-                rightTxt = "Last Spec"
-            else
-                rightTxt = SPM:GetSpecInfo(SPM.db.Specs[SPM:GetSpecId()][2])
-            end
-            GameTooltip:AddDoubleLine("|cffffffff"..leftTxt,"|cffffffff"..rightTxt)
-            GameTooltip:Show()
-        end
-        toggleMainButton("show")
-        favoritebutton.Highlight:Show()
-    end)
-    favoritebutton:SetScript("OnLeave", function()
-        favoritebutton.Highlight:Hide()
-        GameTooltip:Hide()
-        toggleMainButton("hide")
-    end)
-
 InterfaceOptionsFrame:HookScript("OnShow", function()
     if InterfaceOptionsFrame and SpecMenuOptionsFrame:IsVisible() then
-			SPM:OpenOptions()
+            SpecMenu_OpenOptions()
     end
 end)
 
 function SPM:OnInitialize()
     if not SpecMenuDB then SpecMenuDB = {} end
-    SPM.db = SpecMenuDB
-    setupSettings(SPM.db)
-    lastActiveSpec = SPM.db.LastSpec
-    SPM.optionsSpecNum = SPM:GetSpecId()
-    SPM:RegisterEvent("ADDON_LOADED")
-
+    self.db = SpecMenuDB
+    setupSettings(self.db)
+    self.lastActiveSpec = self.db.LastSpec
+    self.optionsSpecNum = self:GetSpecId()
+    self:RegisterEvent("ADDON_LOADED")
 end
 
 function SPM:ADDON_LOADED(event, arg1, arg2, arg3)
 	-- setup for auction house window
 	if event == "ADDON_LOADED" and arg1 == "Ascension_CharacterAdvancement" then
         CharacterAdvancementSideBarSpecListNineSlice:HookScript("OnHide", function()
-            local name, icon = SPM:GetSpecInfo(SPM:GetSpecId())
-            mainframe.icon:SetTexture(icon)
-            minimap.icon = icon
+            local name, icon = self:GetSpecInfo(self:GetSpecId())
+            SpecMenuFrame.icon:SetTexture(icon)
+            self.minimap.icon = icon
         end)
 	end
 end
 
 -- toggle the main button frame
-local function toggleMainFrame()
+function SPM:ToggleMainFrame()
     if SpecMenuFrame:IsVisible() then
         SpecMenuFrame:Hide()
     else
@@ -468,26 +338,25 @@ local function SlashCommand(msg)
     elseif msg == "options" then
         SPM:Options_Toggle()
     else
-        toggleMainFrame()
+        SPM:ToggleMainFrame()
     end
 end
 
 function SPM:OnEnable()
-    if icon then
-        SPM.map = {hide = SPM.db.minimap}
-        icon:Register('SpecMenu', minimap, SPM.map)
-    end
 
-    SPM.SpecInfo = SPEC_SWAP_SPELLS
-    local name, icon = SPM:GetSpecInfo(SPM:GetSpecId())
-    mainframe.icon:SetTexture(icon)
-    minimap.icon = icon
-    PopulateSpecDB()
-    SPM:DropDownInitialize()
-    toggleMainButton("hide")
-    SPM:CreateSpecDisplay()
-    SPM:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", lastSpec)
-    SPM:RegisterEvent("ASCENSION_CA_SPECIALIZATION_ACTIVE_ID_CHANGED", lastSpec)
+    SPM:InitializeMinimap()
+    self.SpecInfo = SPEC_SWAP_SPELLS
+    local name, icon = self:GetSpecInfo(self:GetSpecId())
+    SpecMenuFrame.icon:SetTexture(icon)
+    
+    self.class = select(2,UnitClass("player"))
+    self:PopulateSpecDB()
+    self:OptionsDropDownInitialize()
+    self:ToggleMainButton("hide")
+    self.specDisplayLoaded = false
+    self:CreateSpecDisplay()
+    self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenu_LastSpec)
+    self:RegisterEvent("ASCENSION_CA_SPECIALIZATION_ACTIVE_ID_CHANGED", SpecMenu_LastSpec)
 
     --Enable the use of /me or /mysticextended to open the loot browser
     SLASH_SPECMENU1 = "/specmenu"
@@ -497,55 +366,23 @@ function SPM:OnEnable()
     end
 end
 
-local function GetTipAnchor(frame)
-    local x, y = frame:GetCenter()
-    if not x or not y then return 'TOPLEFT', 'BOTTOMLEFT' end
-    local hhalf = (x > UIParent:GetWidth() * 2 / 3) and 'RIGHT' or (x < UIParent:GetWidth() / 3) and 'LEFT' or ''
-    local vhalf = (y > UIParent:GetHeight() / 2) and 'TOP' or 'BOTTOM'
-    return vhalf .. hhalf, frame, (vhalf == 'TOP' and 'BOTTOM' or 'TOP') .. hhalf
-end
-
-function minimap.OnClick(self, button)
-    GameTooltip:Hide()
-    if button == "LeftButton" then
-        if dewdrop:IsOpen() then dewdrop:Close() return end
-        SpecMenu_DewdropRegister(self)
-        dewdrop:Open(self)
-    elseif button == "RightButton" then
-        if dewdrop:IsOpen() then dewdrop:Close() return end
-        SpecMenu_EnchantPreset_DewdropRegister(self)
-        dewdrop:Open(self)
-    end
-end
-
-function minimap.OnLeave()
-    GameTooltip:Hide()
-end
-
-function SPM:OnEnter(self)
-    GameTooltip:SetOwner(self, 'ANCHOR_NONE')
-    GameTooltip:SetPoint(GetTipAnchor(self))
+function SPM:OnEnter(button,  showUnlock)
+    GameTooltip:SetOwner(button, 'ANCHOR_NONE')
+    GameTooltip:SetPoint(SPM:GetTipAnchor(button))
     GameTooltip:ClearLines()
-    local specID, presetID, presetName, specName = SPM:GetSpecId(), SPM:GetPresetId()
-    specName = "|cffffffff"..SPM:GetSpecInfo(specID)
-    presetName = "|cffffffff"..SPM:GetPresetName(presetID)
+    local specID, presetID, presetName, specName = self:GetSpecId(), self:GetPresetId()
+    specName = "|cffffffff"..self:GetSpecInfo(specID)
+    presetName = "|cffffffff"..self:GetPresetName(presetID)
     GameTooltip:AddLine("SpecMenu")
     GameTooltip:AddDoubleLine("Active Spec:", specName)
     GameTooltip:AddDoubleLine("Active Enchant Spec:", presetName)
     GameTooltip:Show()
-end
-
-function minimap.OnEnter(self)
-    SPM:OnEnter(self)
-end
-
-function SPM:ToggleMinimap()
-    local hide = not SPM.db.minimap
-    SPM.db.minimap = hide
-    if hide then
-      icon:Hide('SpecMenu')
-    else
-      icon:Show('SpecMenu')
+    if self.db.autoMenu and not UnitAffectingCombat("player") then
+        if IsAltKeyDown() then
+            self:EnchantPreset_DewdropRegister(button)
+        else
+            self:DewdropRegister(button, showUnlock)
+        end
     end
 end
 
@@ -559,62 +396,4 @@ function SPM:SetDisplayText()
     else
         SpecDisplayFrame:SetWidth(SpecDisplayFrame.text2:GetWidth() +30)
     end
-end
-
-SPM.specDisplayLoaded = false
-function SPM:CreateSpecDisplay()
-    if SPM.specDisplayLoaded or SPM.db.hideSpecDisplay then return end
-    --Creates the main interface
-    local displayframe = CreateFrame("Frame", "SpecDisplayFrame", UIParent)
-    displayframe:SetSize(200,50)
-    displayframe:SetMovable(true)
-    displayframe.Back = displayframe:CreateTexture(nil, "BACKGROUND")
-    displayframe.Back:SetAllPoints()
-    displayframe.Back:SetSize(200,50)
-    displayframe.Back:SetPoint("CENTER",displayframe)
-    displayframe:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", tile = true, tileSize = 16,
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 8,
-        insets = { left = 1, right = 1, top = 1, bottom = 1 },
-    })
-    if SPM.db.hideSpecDisplayBackground then
-        displayframe:SetBackdropColor(0, 0, 0, 0)
-        displayframe:SetBackdropBorderColor(0, 0, 0, 0)
-    else
-        displayframe:SetBackdropColor(0, 0, 0, 5)
-        displayframe:SetBackdropBorderColor(0, 0, 0, 5)
-    end
-
-    displayframe:EnableMouse(true)
-    displayframe:RegisterForDrag("LeftButton")
-    displayframe:SetScript("OnDragStart", function(self) displayframe:StartMoving() end)
-    displayframe:SetScript("OnDragStop", function(self)
-        displayframe:StopMovingOrSizing()
-        SPM.db.DisplayPos = {displayframe:GetPoint()}
-        SPM.db.DisplayPos[2] = "UIParent"
-    end)
-    displayframe:SetMovable(true)
-    displayframe.text = displayframe:CreateFontString()
-    displayframe.text:SetFont("Fonts\\FRIZQT__.TTF", 13)
-    displayframe.text:SetFontObject(GameFontNormal)
-    displayframe.text:SetPoint("LEFT", displayframe, 10, 10)
-    displayframe.text:SetJustifyH("LEFT")
-    displayframe.text2 = displayframe:CreateFontString()
-    displayframe.text2:SetFont("Fonts\\FRIZQT__.TTF", 13)
-    displayframe.text2:SetFontObject(GameFontNormal)
-    displayframe.text2:SetPoint("BOTTOMLEFT", displayframe.text, 0 ,-17)
-    displayframe.text2:SetJustifyH("LEFT")
-    SPM:SetDisplayText()
-    
-    if SPM.db.DisplayPos then
-        local pos = SPM.db.DisplayPos
-        displayframe:ClearAllPoints()
-        displayframe:SetPoint(pos[1], pos[2], pos[3], pos[4], pos[5])
-    else
-        displayframe:ClearAllPoints()
-        displayframe:SetPoint("CENTER", UIParent)
-    end
-    displayframe:SetScale(SPM.db.SpecDisplayScale or 1)
-    displayframe:Show()
-    SPM.specDisplayLoaded = true
 end

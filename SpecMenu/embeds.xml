@@ -17,5 +17,8 @@
 <Script file="Libs\DewdropLib\Dewdrop-2.0\Dewdrop-2.0.lua"/>
 
 <Script file="SpecMenu.lua"/>
+<Script file="SpecMenuUI.lua"/>
 <Script file="SpecMenuOptions.lua"/>
+<Script file="Minimap.lua"/>
+<Script file="Utils.lua"/>
 </Ui>
