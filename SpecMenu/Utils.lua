@@ -1,5 +1,7 @@
 local SPM = LibStub("AceAddon-3.0"):GetAddon("SpecMenu")
 
+local WHITE = "|cffFFFFFF"
+
 function SPM:GetPresetName(index)
     return MysticEnchantManagerUtil.GetPresetName(index)
 end

@@ -51,3 +51,7 @@ function SPM:InitializeMinimap()
     end
     minimap.icon = icon
 end
+
+function SPM:SetMapIcon(icon)
+    minimap.icon = icon
+end

@@ -1,4 +1,5 @@
 local SPM = LibStub("AceAddon-3.0"):GetAddon("SpecMenu")
+
 local specmenu_options_swap = "Last Active Spec"
 local favoriteNum = ""
 local lastSpecPos

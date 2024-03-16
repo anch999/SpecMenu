@@ -1,4 +1,5 @@
 local SPM = LibStub("AceAddon-3.0"):GetAddon("SpecMenu")
+
 local specbutton, mainframe
 function SPM:CreateMainUI()
 
@@ -37,7 +38,7 @@ function SPM:CreateMainUI()
             end
         end)
         mainframe:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    
+
         specbutton = CreateFrame("Button", "SpecMenuFrame_Menu", SpecMenuFrame)
         specbutton:SetSize(70,34)
         specbutton:SetPoint("BOTTOM", SpecMenuFrame, "BOTTOM", 0, 2)

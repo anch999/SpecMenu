@@ -59,7 +59,7 @@ local function SpecMenu_LastSpec(event, ...)
             end
             local name, icon = SPM:GetSpecInfo(specNum)
             SpecMenuFrame.icon:SetTexture(icon)
-            SPM.minimap.icon = icon
+            SPM:SetMapIcon(icon)
             Timer.After(0.5, SPM.SetDisplayText)
         end
 end
@@ -311,7 +311,7 @@ function SPM:ADDON_LOADED(event, arg1, arg2, arg3)
         CharacterAdvancementSideBarSpecListNineSlice:HookScript("OnHide", function()
             local name, icon = self:GetSpecInfo(self:GetSpecId())
             SpecMenuFrame.icon:SetTexture(icon)
-            self.minimap.icon = icon
+            SPM:SetMapIcon(icon)
         end)
 	end
 end
@@ -344,10 +344,12 @@ end
 
 function SPM:OnEnable()
 
-    SPM:InitializeMinimap()
+    
     self.SpecInfo = SPEC_SWAP_SPELLS
     local name, icon = self:GetSpecInfo(self:GetSpecId())
     SpecMenuFrame.icon:SetTexture(icon)
+    SPM:InitializeMinimap()
+    SPM:SetMapIcon(icon)
     
     self.class = select(2,UnitClass("player"))
     self:PopulateSpecDB()
