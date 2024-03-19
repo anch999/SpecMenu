@@ -369,22 +369,23 @@ function SPM:OnEnable()
 end
 
 function SPM:OnEnter(button,  showUnlock)
-    GameTooltip:SetOwner(button, 'ANCHOR_NONE')
-    GameTooltip:SetPoint(SPM:GetTipAnchor(button))
-    GameTooltip:ClearLines()
-    local specID, presetID, presetName, specName = self:GetSpecId(), self:GetPresetId()
-    specName = "|cffffffff"..self:GetSpecInfo(specID)
-    presetName = "|cffffffff"..self:GetPresetName(presetID)
-    GameTooltip:AddLine("SpecMenu")
-    GameTooltip:AddDoubleLine("Active Spec:", specName)
-    GameTooltip:AddDoubleLine("Active Enchant Spec:", presetName)
-    GameTooltip:Show()
     if self.db.autoMenu and not UnitAffectingCombat("player") then
         if IsAltKeyDown() then
             self:EnchantPreset_DewdropRegister(button)
         else
             self:DewdropRegister(button, showUnlock)
         end
+    else
+        GameTooltip:SetOwner(button, 'ANCHOR_NONE')
+        GameTooltip:SetPoint(SPM:GetTipAnchor(button))
+        GameTooltip:ClearLines()
+        local specID, presetID, presetName, specName = self:GetSpecId(), self:GetPresetId()
+        specName = "|cffffffff"..self:GetSpecInfo(specID)
+        presetName = "|cffffffff"..self:GetPresetName(presetID)
+        GameTooltip:AddLine("SpecMenu")
+        GameTooltip:AddDoubleLine("Active Spec:", specName)
+        GameTooltip:AddDoubleLine("Active Enchant Spec:", presetName)
+        GameTooltip:Show()
     end
 end
 
