@@ -34,6 +34,9 @@ function SPM:PopulateSpecDB()
         if CA_IsSpellKnown(v) and not self.db.Specs[i] then
             self.db.Specs[i] = { 1, 1}
         end
+        if self.db.Specs[i] and not self.db.Specs[i].num then
+            self.db.Specs[i].num = i
+        end
     end
 end
 
@@ -48,4 +51,29 @@ function SPM:AddDividerLine(maxLenght)
         "notCheckable", true
     )
     return true
+end
+
+function SPM:MoveEntry(oldNum, newNum, profile)
+    for _, v in ipairs(profile) do
+        if newNum >= 1 and newNum <= #profile then
+            if v.num == oldNum then
+                v.num = newNum
+
+            elseif v.num == newNum then
+                v.num = oldNum
+            end
+        end
+    end
+end
+
+-- add item or spell to the dropdown menu
+function SPM:ChangeEntryOrder(text, icon, num, profile)
+    self.dewdrop:AddLine(
+            'text', text,
+            'icon', icon,
+            'func', function() self:MoveEntry(num, num - 1, profile) end,
+            'funcRight', function() self:MoveEntry(num, num + 1, profile) end,
+            'textHeight', self.db.txtSize,
+            'textWidth', self.db.txtSize
+    )
 end

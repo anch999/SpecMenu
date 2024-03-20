@@ -55,7 +55,6 @@ function SPM:Options_FavoriteLastSpec_OnClick()
 		SPM.db.Specs[SPM.optionsSpecNum][1] = "LastSpec"
 	elseif favoriteNum == "2" then
 		UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite2, thisID)
-		SpecMenu_favoriteNum2 = "LastSpec"
 		SPM.db.Specs[SPM.optionsSpecNum][2] = "LastSpec"
 	end
 end
@@ -67,7 +66,7 @@ function SPM:Options_Favorite1_OnClick()
 end
 
 local function SpecMenu_Options_Favorite1_Initialize()
-	--Loads the spec list into the favorite1 dropdown menu
+	--Loads the spec list into the self.options.favorite1 dropdown menu
 	local info
 	for i,_ in ipairs(SPM.db.Specs) do
 		info = {
@@ -77,7 +76,7 @@ local function SpecMenu_Options_Favorite1_Initialize()
 					UIDropDownMenu_AddButton(info)
 					lastSpecPos = i + 1
 	end
-	--Adds Lastspec as the last entry on the favorite1 dropdown menu 
+	--Adds Lastspec as the last entry on the self.options.favorite1 dropdown menu 
 	info = {
 		text = specmenu_options_swap,
 		func = SPM.Options_FavoriteLastSpec_OnClick,
@@ -93,7 +92,7 @@ function SPM:Options_Favorite2_OnClick()
 end
 
 local function SpecMenu_Options_Favorite2_Initialize()
-	--Loads the spec list into the favorite2 dropdown menu
+	--Loads the spec list into the self.options.favorite2 dropdown menu
 	local info
 	for i,_ in ipairs(SPM.db.Specs) do
 		info = {
@@ -103,7 +102,7 @@ local function SpecMenu_Options_Favorite2_Initialize()
 			UIDropDownMenu_AddButton(info)
 			lastSpecPos = i + 1
 	end
-	--Adds Lastspec as the last entry on the favorite2 dropdown menu 
+	--Adds Lastspec as the last entry on the self.options.favorite2 dropdown menu 
 	info = {
 		text = specmenu_options_swap,
 		func = SPM.Options_FavoriteLastSpec_OnClick,
@@ -125,7 +124,7 @@ function SpecMenu_OpenOptions()
 			local menuID = SPM:GetSpecId()
 			UIDropDownMenu_SetSelectedID(SpecMenuOptions_Menu, menuID)
 			UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite1, SPM.db.Specs[menuID][1])
-			UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite2, SPM.db.Specs[menuID][2])
+			UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite1, SPM.db.Specs[menuID][2])
 
 		if SPM.db.Specs[menuID][1] == "LastSpec" then
 			UIDropDownMenu_SetText(SpecMenuOptions_favorite1, specmenu_options_swap)
@@ -146,43 +145,42 @@ end
 function SPM:CreateOptionsUI()
 --Creates the options frame and all its assets
 	if InterfaceOptionsFrame:GetWidth() < 850 then InterfaceOptionsFrame:SetWidth(850) end
-	local mainframe = {}
-		mainframe.panel = CreateFrame("FRAME", "SpecMenuOptionsFrame", UIParent, nil)
-    	local fstring = mainframe.panel:CreateFontString(mainframe, "OVERLAY", "GameFontNormal")
-		fstring:SetText("Spec Menu Settings")
-		fstring:SetPoint("TOPLEFT", 15, -15)
-		mainframe.panel.name = "SpecMenu"
-		InterfaceOptions_AddCategory(mainframe.panel)
+		self.options ={ panel = CreateFrame("FRAME", "SpecMenuOptionsFrame", UIParent, nil) }
+    	self.options.fstring = self.options.panel:CreateFontString(self.options, "OVERLAY", "GameFontNormal")
+		self.options.fstring:SetText("Spec Menu Settings")
+		self.options.fstring:SetPoint("TOPLEFT", 15, -15)
+		self.options.panel.name = "SpecMenu"
+		InterfaceOptions_AddCategory(self.options.panel)
 
-	local specmenu = CreateFrame("Button", "SpecMenuOptions_Menu", SpecMenuOptionsFrame, "UIDropDownMenuTemplate")
-    specmenu:SetPoint("TOPLEFT", 15, -60)
-	specmenu.Lable = specmenu:CreateFontString(nil , "BORDER", "GameFontNormal")
-	specmenu.Lable:SetJustifyH("LEFT")
-	specmenu.Lable:SetPoint("LEFT", specmenu, 190, 0)
-	specmenu.Lable:SetText("Select Specialization")
-	specmenu:SetScript("OnClick", self.Options_UpateDB_OnClick)
+	self.options.specmenu = CreateFrame("Button", "SpecMenuOptions_Menu", SpecMenuOptionsFrame, "UIDropDownMenuTemplate")
+    self.options.specmenu:SetPoint("TOPLEFT", 15, -60)
+	self.options.specmenu.Lable = self.options.specmenu:CreateFontString(nil , "BORDER", "GameFontNormal")
+	self.options.specmenu.Lable:SetJustifyH("LEFT")
+	self.options.specmenu.Lable:SetPoint("LEFT", self.options.specmenu, 190, 0)
+	self.options.specmenu.Lable:SetText("Select Specialization")
+	self.options.specmenu:SetScript("OnClick", self.Options_UpateDB_OnClick)
 
-	local favorite1 = CreateFrame("Button", "SpecMenuOptions_favorite1", SpecMenuOptionsFrame, "UIDropDownMenuTemplate")
-    favorite1:SetPoint("TOPLEFT", 15, -95)
-	favorite1.Lable = favorite1:CreateFontString(nil , "BORDER", "GameFontNormal")
-	favorite1.Lable:SetJustifyH("LEFT")
-	favorite1.Lable:SetPoint("LEFT", favorite1, 190, 0)
-	favorite1.Lable:SetText("Favorite Left Click")
+	self.options.favorite1 = CreateFrame("Button", "SpecMenuOptions_favorite1", SpecMenuOptionsFrame, "UIDropDownMenuTemplate")
+    self.options.favorite1:SetPoint("TOPLEFT", 15, -95)
+	self.options.favorite1.Lable = self.options.favorite1:CreateFontString(nil , "BORDER", "GameFontNormal")
+	self.options.favorite1.Lable:SetJustifyH("LEFT")
+	self.options.favorite1.Lable:SetPoint("LEFT", self.options.favorite1, 190, 0)
+	self.options.favorite1.Lable:SetText("Favorite Left Click")
 
-	local favorite2 = CreateFrame("Button", "SpecMenuOptions_favorite2", SpecMenuOptionsFrame, "UIDropDownMenuTemplate")
-    favorite2:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 15, -130)
-	favorite2.Lable = favorite2:CreateFontString(nil , "BORDER", "GameFontNormal")
-	favorite2.Lable:SetJustifyH("LEFT")
-	favorite2.Lable:SetPoint("LEFT", favorite2, 190, 0)
-	favorite2.Lable:SetText("Favorite Right Click")
+	self.options.favorite2 = CreateFrame("Button", "SpecMenuOptions_favorite2", SpecMenuOptionsFrame, "UIDropDownMenuTemplate")
+    self.options.favorite2:SetPoint("TOPLEFT", SpecMenuOptionsFrame, "TOPLEFT", 15, -130)
+	self.options.favorite2.Lable = self.options.favorite2:CreateFontString(nil , "BORDER", "GameFontNormal")
+	self.options.favorite2.Lable:SetJustifyH("LEFT")
+	self.options.favorite2.Lable:SetPoint("LEFT", self.options.favorite2, 190, 0)
+	self.options.favorite2.Lable:SetText("Favorite Right Click")
 
-	local hideMenu = CreateFrame("CheckButton", "SpecMenuOptions_HideMenu", SpecMenuOptionsFrame, "UICheckButtonTemplate")
-	hideMenu:SetPoint("TOPLEFT", 15, -200)
-	hideMenu.Lable = hideMenu:CreateFontString(nil , "BORDER", "GameFontNormal")
-	hideMenu.Lable:SetJustifyH("LEFT")
-	hideMenu.Lable:SetPoint("LEFT", 30, 0)
-	hideMenu.Lable:SetText("Hide Main Menu")
-	hideMenu:SetScript("OnClick", function() 
+	self.options.hideMenu = CreateFrame("CheckButton", "SpecMenuOptions_HideMenu", SpecMenuOptionsFrame, "UICheckButtonTemplate")
+	self.options.hideMenu:SetPoint("TOPLEFT", 15, -200)
+	self.options.hideMenu.Lable = self.options.hideMenu:CreateFontString(nil , "BORDER", "GameFontNormal")
+	self.options.hideMenu.Lable:SetJustifyH("LEFT")
+	self.options.hideMenu.Lable:SetPoint("LEFT", 30, 0)
+	self.options.hideMenu.Lable:SetText("Hide Main Menu")
+	self.options.hideMenu:SetScript("OnClick", function() 
 		if self.db.HideMenu then
 			SpecMenuFrame:Show()
 			self.db.HideMenu = false
@@ -192,20 +190,20 @@ function SPM:CreateOptionsUI()
 		end
 	end)
 
-	local hideHover = CreateFrame("CheckButton", "SpecMenuOptions_ShowOnHover", SpecMenuOptionsFrame, "UICheckButtonTemplate")
-	hideHover:SetPoint("TOPLEFT", 15, -235)
-	hideHover.Lable = hideHover:CreateFontString(nil , "BORDER", "GameFontNormal")
-	hideHover.Lable:SetJustifyH("LEFT")
-	hideHover.Lable:SetPoint("LEFT", 30, 0)
-	hideHover.Lable:SetText("Only show menu button on mouse over")
-	hideHover:SetScript("OnEnter", function(self)
+	self.options.showOnMouseOver = CreateFrame("CheckButton", "SpecMenuOptions_ShowOnMouseOver", SpecMenuOptionsFrame, "UICheckButtonTemplate")
+	self.options.showOnMouseOver:SetPoint("TOPLEFT", 15, -235)
+	self.options.showOnMouseOver.Lable = self.options.showOnMouseOver:CreateFontString(nil , "BORDER", "GameFontNormal")
+	self.options.showOnMouseOver.Lable:SetJustifyH("LEFT")
+	self.options.showOnMouseOver.Lable:SetPoint("LEFT", 30, 0)
+	self.options.showOnMouseOver.Lable:SetText("Only show menu button on mouse over")
+	self.options.showOnMouseOver:SetScript("OnEnter", function(self)
         GameTooltip:ClearLines()
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT", -(self:GetWidth() / 2), 5)
         GameTooltip:AddLine("Only shows the main menu button on mouse over")
         GameTooltip:Show()
     end)
-    hideHover:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	hideHover:SetScript("OnClick", function()
+    self.options.showOnMouseOver:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	self.options.showOnMouseOver:SetScript("OnClick", function()
 		if self.db.ShowMenuOnHover then
 			SpecMenuFrame_Menu:Show()
             SpecMenuFrame_Favorite:Show()
@@ -222,36 +220,36 @@ function SPM:CreateOptionsUI()
 
 	end)
 
-	local autoMenu = CreateFrame("CheckButton", "SpecMenuOptions_AutoMenu", SpecMenuOptionsFrame, "UICheckButtonTemplate")
-	autoMenu:SetPoint("TOPLEFT", 15, -270)
-	autoMenu.Lable = autoMenu:CreateFontString(nil , "BORDER", "GameFontNormal")
-	autoMenu.Lable:SetJustifyH("LEFT")
-	autoMenu.Lable:SetPoint("LEFT", 30, 0)
-	autoMenu.Lable:SetText("Auto open menu of mouse over")
-	autoMenu:SetScript("OnEnter", function(self)
+	self.options.autoMenu = CreateFrame("CheckButton", "SpecMenuOptions_AutoMenu", SpecMenuOptionsFrame, "UICheckButtonTemplate")
+	self.options.autoMenu:SetPoint("TOPLEFT", 15, -270)
+	self.options.autoMenu.Lable = self.options.autoMenu:CreateFontString(nil , "BORDER", "GameFontNormal")
+	self.options.autoMenu.Lable:SetJustifyH("LEFT")
+	self.options.autoMenu.Lable:SetPoint("LEFT", 30, 0)
+	self.options.autoMenu.Lable:SetText("Auto open menu of mouse over")
+	self.options.autoMenu:SetScript("OnEnter", function(self)
         GameTooltip:ClearLines()
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT", -(self:GetWidth() / 2), 5)
         GameTooltip:AddLine("Auto opens the menu when you mouse over the button. \nHolding alt will open the enchant specs menu")
         GameTooltip:Show()
     end)
-    autoMenu:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	autoMenu:SetScript("OnClick", function() self.db.autoMenu = not self.db.autoMenu end)
+    self.options.autoMenu:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	self.options.autoMenu:SetScript("OnClick", function() self.db.self.options.autoMenu = not self.db.self.options.autoMenu end)
 
-	local hideMinimap = CreateFrame("CheckButton", "SpecMenuOptions_HideMinimap", SpecMenuOptionsFrame, "UICheckButtonTemplate")
-	hideMinimap:SetPoint("TOPLEFT", 15, -305)
-	hideMinimap.Lable = hideMinimap:CreateFontString(nil , "BORDER", "GameFontNormal")
-	hideMinimap.Lable:SetJustifyH("LEFT")
-	hideMinimap.Lable:SetPoint("LEFT", 30, 0)
-	hideMinimap.Lable:SetText("Hide Minimap Icon")
-	hideMinimap:SetScript("OnClick", function() self:ToggleMinimap() end)
+	self.options.hideMinimap = CreateFrame("CheckButton", "SpecMenuOptions_HideMinimap", SpecMenuOptionsFrame, "UICheckButtonTemplate")
+	self.options.hideMinimap:SetPoint("TOPLEFT", 15, -305)
+	self.options.hideMinimap.Lable = self.options.hideMinimap:CreateFontString(nil , "BORDER", "GameFontNormal")
+	self.options.hideMinimap.Lable:SetJustifyH("LEFT")
+	self.options.hideMinimap.Lable:SetPoint("LEFT", 30, 0)
+	self.options.hideMinimap.Lable:SetText("Hide Minimap Icon")
+	self.options.hideMinimap:SetScript("OnClick", function() self:ToggleMinimap() end)
 
-	local hideSpecDisplay = CreateFrame("CheckButton", "SpecMenuOptions_HideSpecDisplay", SpecMenuOptionsFrame, "UICheckButtonTemplate")
-	hideSpecDisplay:SetPoint("TOPLEFT", 380, -55)
-	hideSpecDisplay.Lable = hideSpecDisplay:CreateFontString(nil , "BORDER", "GameFontNormal")
-	hideSpecDisplay.Lable:SetJustifyH("LEFT")
-	hideSpecDisplay.Lable:SetPoint("LEFT", 30, 0)
-	hideSpecDisplay.Lable:SetText("Hide Spec/Enchant Display")
-	hideSpecDisplay:SetScript("OnClick", function()
+	self.options.hideSpecDisplay = CreateFrame("CheckButton", "SpecMenuOptions_HideSpecDisplay", SpecMenuOptionsFrame, "UICheckButtonTemplate")
+	self.options.hideSpecDisplay:SetPoint("TOPLEFT", 380, -55)
+	self.options.hideSpecDisplay.Lable = self.options.hideSpecDisplay:CreateFontString(nil , "BORDER", "GameFontNormal")
+	self.options.hideSpecDisplay.Lable:SetJustifyH("LEFT")
+	self.options.hideSpecDisplay.Lable:SetPoint("LEFT", 30, 0)
+	self.options.hideSpecDisplay.Lable:SetText("Hide Spec/Enchant Display")
+	self.options.hideSpecDisplay:SetScript("OnClick", function()
 		self.db.hideSpecDisplay = not self.db.hideSpecDisplay
 		self:CreateSpecDisplay()
 		if self.db.hideSpecDisplay then
@@ -262,13 +260,13 @@ function SPM:CreateOptionsUI()
 		end
 	end)
 
-	local hideSpecDisplayBackground = CreateFrame("CheckButton", "SpecMenuOptions_HideSpecDisplayBackground", SpecMenuOptionsFrame, "UICheckButtonTemplate")
-	hideSpecDisplayBackground:SetPoint("TOPLEFT", 380, -90)
-	hideSpecDisplayBackground.Lable = hideSpecDisplayBackground:CreateFontString(nil , "BORDER", "GameFontNormal")
-	hideSpecDisplayBackground.Lable:SetJustifyH("LEFT")
-	hideSpecDisplayBackground.Lable:SetPoint("LEFT", 30, 0)
-	hideSpecDisplayBackground.Lable:SetText("Hide Spec/Enchant Display Background")
-	hideSpecDisplayBackground:SetScript("OnClick", function()
+	self.options.hideSpecDisplayBackground = CreateFrame("CheckButton", "SpecMenuOptions_HideSpecDisplayBackground", SpecMenuOptionsFrame, "UICheckButtonTemplate")
+	self.options.hideSpecDisplayBackground:SetPoint("TOPLEFT", 380, -90)
+	self.options.hideSpecDisplayBackground.Lable = self.options.hideSpecDisplayBackground:CreateFontString(nil , "BORDER", "GameFontNormal")
+	self.options.hideSpecDisplayBackground.Lable:SetJustifyH("LEFT")
+	self.options.hideSpecDisplayBackground.Lable:SetPoint("LEFT", 30, 0)
+	self.options.hideSpecDisplayBackground.Lable:SetText("Hide Spec/Enchant Display Background")
+	self.options.hideSpecDisplayBackground:SetScript("OnClick", function()
 		self.db.hideSpecDisplayBackground = not self.db.hideSpecDisplayBackground
 		if self.db.hideSpecDisplayBackground then
 			SpecDisplayFrame:SetBackdropColor(0, 0, 0, 0)
@@ -279,31 +277,48 @@ function SPM:CreateOptionsUI()
 		end
 	end)
 
-	local displayScale = CreateFrame("Slider", "SpecMenuOptionsDisplayScale", SpecMenuOptionsFrame,"OptionsSliderTemplate")
-		displayScale:SetSize(240,16)
-		displayScale:SetPoint("TOPLEFT", 380,-140)
-		displayScale:SetMinMaxValues(0.25, 1.5)
-		_G[displayScale:GetName().."Text"]:SetText("Spec Display Scale: ".." ("..round(displayScale:GetValue(),2)..")")
-		_G[displayScale:GetName().."Low"]:SetText(0.25)
-		_G[displayScale:GetName().."High"]:SetText(1.5)
-		displayScale:SetValueStep(0.01)
-		displayScale:SetScript("OnShow", function() displayScale:SetValue(self.db.SpecDisplayScale) end)
-        displayScale:SetScript("OnValueChanged", function()
-			_G[displayScale:GetName().."Text"]:SetText("Spec Display Scale: ".." ("..round(displayScale:GetValue(),2)..")")
-            self.db.SpecDisplayScale = displayScale:GetValue()
-			if SpecDisplayFrame then
-            	SpecDisplayFrame:SetScale(self.db.SpecDisplayScale)
-				self:SetDisplayText()
-			end
-        end)
+	self.options.displayScale = CreateFrame("Slider", "SpecMenuOptionsDisplayScale", SpecMenuOptionsFrame,"OptionsSliderTemplate")
+	self.options.displayScale:SetSize(240,16)
+	self.options.displayScale:SetPoint("TOPLEFT", 380,-140)
+	self.options.displayScale:SetMinMaxValues(0.25, 1.5)
+	_G[self.options.displayScale:GetName().."Text"]:SetText("Spec Display Scale: ".." ("..round(self.options.displayScale:GetValue(),2)..")")
+	_G[self.options.displayScale:GetName().."Low"]:SetText(0.25)
+	_G[self.options.displayScale:GetName().."High"]:SetText(1.5)
+	self.options.displayScale:SetValueStep(0.01)
+	self.options.displayScale:SetScript("OnShow", function() self.options.displayScale:SetValue(self.db.SpecDisplayScale) end)
+    self.options.displayScale:SetScript("OnValueChanged", function()
+		_G[self.options.displayScale:GetName().."Text"]:SetText("Spec Display Scale: ".." ("..round(self.options.displayScale:GetValue(),2)..")")
+        self.db.SpecDisplayScale = self.options.displayScale:GetValue()
+		if SpecDisplayFrame then
+        	SpecDisplayFrame:SetScale(self.db.SpecDisplayScale)
+			self:SetDisplayText()
+		end
+    end)
 
-	local txtSize = CreateFrame("Button", "SpecMenuOptions_TxtSizeMenu", SpecMenuOptionsFrame, "UIDropDownMenuTemplate")
-		txtSize:SetPoint("TOPLEFT", 15, -340)
-		txtSize.Lable = txtSize:CreateFontString(nil , "BORDER", "GameFontNormal")
-		txtSize.Lable:SetJustifyH("LEFT")
-		txtSize.Lable:SetPoint("LEFT", txtSize, 190, 0)
-		txtSize.Lable:SetText("Menu Text Size")
-	end
+	self.options.buttonScale = CreateFrame("Slider", "SpecMenuOptionsButtonScale", SpecMenuOptionsFrame,"OptionsSliderTemplate")
+	self.options.buttonScale:SetSize(240,16)
+	self.options.buttonScale:SetPoint("TOPLEFT", 380,-190)
+	self.options.buttonScale:SetMinMaxValues(0.25, 1.5)
+	_G[self.options.buttonScale:GetName().."Text"]:SetText("Standalone Button Scale: ".." ("..round(self.options.displayScale:GetValue(),2)..")")
+	_G[self.options.buttonScale:GetName().."Low"]:SetText(0.25)
+	_G[self.options.buttonScale:GetName().."High"]:SetText(1.5)
+	self.options.buttonScale:SetValueStep(0.01)
+	self.options.buttonScale:SetScript("OnShow", function() self.options.buttonScale:SetValue(self.db.buttonScale or 1) end)
+    self.options.buttonScale:SetScript("OnValueChanged", function()
+		_G[self.options.buttonScale:GetName().."Text"]:SetText("Standalone Button Scale: ".." ("..round(self.options.buttonScale:GetValue(),2)..")")
+        self.db.buttonScale = self.options.buttonScale:GetValue()
+		if self.standaloneFrame then
+        	self.standaloneFrame:SetScale(self.db.buttonScale)
+		end
+    end)
+
+	self.options.txtSize = CreateFrame("Button", "SpecMenuOptions_TxtSizeMenu", SpecMenuOptionsFrame, "UIDropDownMenuTemplate")
+	self.options.txtSize:SetPoint("TOPLEFT", 15, -340)
+	self.options.txtSize.Lable = self.options.txtSize:CreateFontString(nil , "BORDER", "GameFontNormal")
+	self.options.txtSize.Lable:SetJustifyH("LEFT")
+	self.options.txtSize.Lable:SetPoint("LEFT", self.options.txtSize, 190, 0)
+	self.options.txtSize.Lable:SetText("Menu Text Size")
+end
 
 	SPM:CreateOptionsUI()
 

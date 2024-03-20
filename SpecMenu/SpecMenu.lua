@@ -1,45 +1,46 @@
 local SPM = LibStub("AceAddon-3.0"):NewAddon("SpecMenu", "AceConsole-3.0", "AceTimer-3.0", "AceEvent-3.0", "AceComm-3.0", "AceSerializer-3.0")
+SPECMENU = SPM
 SPM.dewdrop = AceLibrary("Dewdrop-2.0")
 local CYAN =  "|cff00ffff"
 local WHITE = "|cffFFFFFF"
+local LIMEGREEN = "|cFF32CD32"
 
 --Set Savedvariables defaults
 local DefaultSettings  = {
-    { TableName = "Specs", {} },
-    { TableName = "EnchantPresets", {} },
-    { TableName = "LastSpec", 1 },
-    { TableName = "ShowMenuOnHover", false, Frame = "SpecMenuFrame", CheckBox = "SpecMenuOptions_ShowOnHover" },
-    { TableName = "HideMenu", false, Frame = "SpecMenuFrame", CheckBox = "SpecMenuOptions_HideMenu"},
-    { TableName = "minimap", false, CheckBox = "SpecMenuOptions_HideMinimap"},
-    { TableName = "autoMenu", false, CheckBox = "SpecMenuOptions_AutoMenu"},
-    { TableName = "txtSize", 12},
+    Specs = {{}},
+    EnchantPresets = {{}},
+    LastSpec = 1,
+    ShowMenuOnHover = { false, Frame = "SpecMenuFrame", CheckBox = "SpecMenuOptions_ShowOnMouseOver" },
+    HideMenu = { false, Frame = "SpecMenuFrame", CheckBox = "SpecMenuOptions_HideMenu"},
+    minimap = { false, CheckBox = "SpecMenuOptions_HideMinimap"},
+    autoMenu = { false, CheckBox = "SpecMenuOptions_AutoMenu"},
+    txtSize = 12,
+    enchantSpecs = {{}},
 }
 
---[[ TableName = Name of the saved setting
+--[[ DB = Name of the db you want to setup
 CheckBox = Global name of the checkbox if it has one and first numbered table entry is the boolean
 Text = Global name of where the text and first numbered table entry is the default text 
 Frame = Frame or button etc you want hidden/shown at start based on condition ]]
-local function setupSettings(db)
-    for _,v in ipairs(DefaultSettings) do
-        if db[v.TableName] == nil then
-            if #v > 1 then
-                db[v.TableName] = {}
-                for _, n in ipairs(v) do
-                    tinsert(db[v.TableName], n)
-                end
+local function setupSettings(db, defaultList)
+    for table, v in pairs(defaultList) do
+        if not db[table] then
+            if type(v) == "table" then
+                db[table] = v[1]
             else
-                db[v.TableName] = v[1]
+                db[table] = v
             end
         end
-
-        if v.CheckBox then
-            _G[v.CheckBox]:SetChecked(db[v.TableName])
-        end
-        if v.Text then
-            _G[v.Text]:SetText(db[v.TableName])
-        end
-        if v.Frame then
-            if db[v.TableName] then _G[v.Frame]:Hide() else _G[v.Frame]:Show() end
+        if type(v) == "table" then
+            if v.CheckBox then
+                _G[v.CheckBox]:SetChecked(db[table])
+            end
+            if v.Text then
+                _G[v.Text]:SetText(db[table])
+            end
+            if v.Frame then
+                if db[table] then _G[v.Frame]:Hide() else _G[v.Frame]:Show() end
+            end
         end
     end
 end
@@ -98,26 +99,40 @@ function SPM:DewdropRegister(button, showUnlock)
                 'notCheckable', true
             )
             local function addSpec()
+                local specList = {}
                 for i,v in ipairs(self.SpecInfo) do
                     if CA_IsSpellKnown(v) then
-                        local active = ""
-                        local name, icon = self:GetSpecInfo(i)
-                        if self:SpellCheck(i,"spec") then active = " |cFF00FFFF(Active)" end
-                        active = name..active
-                        self.dewdrop:AddLine(
-                                'text', active,
-                                'icon', icon,
-                                'textHeight', self.db.txtSize,
-                                'textWidth', self.db.txtSize,
-                                'func', function() SPM:DewdropClick(i) end
-                        )
+                        specList[self.db.Specs[i].num] = i
                     else
-                        return
+                        break
+                    end
+                end
+                for _, i in ipairs(specList) do
+                    local name, icon = self:GetSpecInfo(i)
+                    name = self:SpellCheck(i,"spec") and name.." |cFF00FFFF(Active)" or name
+                    if self.reorderMenu then
+                        self:ChangeEntryOrder(name, icon, self.db.Specs[i].num, self.db.Specs)
+                    else
+                        self.dewdrop:AddLine(
+                            'text', name,
+                            'icon', icon,
+                            'textHeight', self.db.txtSize,
+                            'textWidth', self.db.txtSize,
+                            'func', function() SPM:DewdropClick(i) end
+                        )
                     end
                 end
             end
             addSpec()
             self:AddDividerLine(35)
+            local text = self.reorderMenu and LIMEGREEN.."Reorder" or "Reorder"
+            self.dewdrop:AddLine(
+                    'text', text,
+                    'textHeight', self.db.txtSize,
+                    'textWidth', self.db.txtSize,
+                    'func', function() self.reorderMenu = not self.reorderMenu end,
+                    'notCheckable', true
+                )
             if showUnlock then
                 self.dewdrop:AddLine(
                     'text', "Unlock Frame",
@@ -190,22 +205,38 @@ function SPM:EnchantPreset_DewdropRegister(button)
                 'notCheckable', true
             )
             local function addPreset()
+                local enchantSpecs = {}
                 for i = 1, C_MysticEnchantPreset.GetNumPresets() do
-                    local active = ""
-                    if self:SpellCheck(i,"enchant") then active = " |cFF00FFFF(Active)" end
-                    local text = self:GetPresetName(i)..active
+                    self.db.enchantSpecs[i] = self.db.enchantSpecs[i] or { num = i }
+                    enchantSpecs[self.db.enchantSpecs[i].num] = i
+                end
+                for _, i in ipairs(enchantSpecs) do
+                    local name = self:GetPresetName(i)
+                    name = self:SpellCheck(i,"enchant") and name.." |cFF00FFFF(Active)" or name
                     local icon = self:GetPresetIcon(i)
-                    self.dewdrop:AddLine(
-                            'text', text,
-                            'textHeight', self.db.txtSize,
-                            'textWidth', self.db.txtSize,
-                            'icon', icon,
-                            'func', function() SPM:EnchantPreset_DewdropClick(i) end
-                    )
+                    if self.reorderEnchantMenu then
+                        self:ChangeEntryOrder(name, icon, self.db.enchantSpecs[i].num, self.db.enchantSpecs)
+                    else
+                        self.dewdrop:AddLine(
+                                'text', name,
+                                'textHeight', self.db.txtSize,
+                                'textWidth', self.db.txtSize,
+                                'icon', icon,
+                                'func', function() SPM:EnchantPreset_DewdropClick(i) end
+                        )
+                    end
                 end
             end
             addPreset()
             self:AddDividerLine(35)
+            local text = self.reorderEnchantMenu and LIMEGREEN.."Reorder" or "Reorder"
+            self.dewdrop:AddLine(
+                    'text', text,
+                    'textHeight', self.db.txtSize,
+                    'textWidth', self.db.txtSize,
+                    'func', function() self.reorderEnchantMenu = not self.reorderEnchantMenu end,
+                    'notCheckable', true
+                )
             self.dewdrop:AddLine(
 		    	'text', "Close Menu",
                 'textHeight', self.db.txtSize,
@@ -258,7 +289,7 @@ function SPM:MainButton_OnClick(button, arg1)
     end
 end
 
-function SPM:ToggleMainButton(toggle)
+function SPM:ToggleStandaloneButton(toggle)
     if self.db.ShowMenuOnHover then
         if toggle == "show" then
             SpecMenuFrame_Menu:Show()
@@ -299,7 +330,7 @@ end)
 function SPM:OnInitialize()
     if not SpecMenuDB then SpecMenuDB = {} end
     self.db = SpecMenuDB
-    setupSettings(self.db)
+    setupSettings(self.db, DefaultSettings)
     self.lastActiveSpec = self.db.LastSpec
     self.optionsSpecNum = self:GetSpecId()
     self:RegisterEvent("ADDON_LOADED")
@@ -343,8 +374,6 @@ local function SlashCommand(msg)
 end
 
 function SPM:OnEnable()
-
-    
     self.SpecInfo = SPEC_SWAP_SPELLS
     local name, icon = self:GetSpecInfo(self:GetSpecId())
     SpecMenuFrame.icon:SetTexture(icon)
@@ -354,12 +383,13 @@ function SPM:OnEnable()
     self.class = select(2,UnitClass("player"))
     self:PopulateSpecDB()
     self:OptionsDropDownInitialize()
-    self:ToggleMainButton("hide")
+    self:ToggleStandaloneButton("hide")
     self.specDisplayLoaded = false
     self:CreateSpecDisplay()
     self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", SpecMenu_LastSpec)
     self:RegisterEvent("ASCENSION_CA_SPECIALIZATION_ACTIVE_ID_CHANGED", SpecMenu_LastSpec)
-
+    self.standaloneFrame:SetScale(self.db.buttonScale or 1)
+    self.db.EnchantPresets = nil
     --Enable the use of /me or /mysticextended to open the loot browser
     SLASH_SPECMENU1 = "/specmenu"
     SLASH_SPECMENU2 = "/spm"
