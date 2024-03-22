@@ -1,6 +1,5 @@
 local SPM = LibStub("AceAddon-3.0"):GetAddon("SpecMenu")
 
-local specmenu_options_swap = "Last Active Spec"
 local favoriteNum = ""
 local lastSpecPos
 
@@ -78,7 +77,7 @@ local function SpecMenu_Options_Favorite1_Initialize()
 	end
 	--Adds Lastspec as the last entry on the self.options.favorite1 dropdown menu 
 	info = {
-		text = specmenu_options_swap,
+		text = "Last Active Spec",
 		func = SPM.Options_FavoriteLastSpec_OnClick,
 	}
 		UIDropDownMenu_AddButton(info)
@@ -104,7 +103,7 @@ local function SpecMenu_Options_Favorite2_Initialize()
 	end
 	--Adds Lastspec as the last entry on the self.options.favorite2 dropdown menu 
 	info = {
-		text = specmenu_options_swap,
+		text = "Last Active Spec",
 		func = SPM.Options_FavoriteLastSpec_OnClick,
 	}
 		UIDropDownMenu_AddButton(info)
@@ -127,13 +126,13 @@ function SpecMenu_OpenOptions()
 			UIDropDownMenu_SetSelectedID(SpecMenuOptions_favorite1, SPM.db.Specs[menuID][2])
 
 		if SPM.db.Specs[menuID][1] == "LastSpec" then
-			UIDropDownMenu_SetText(SpecMenuOptions_favorite1, specmenu_options_swap)
+			UIDropDownMenu_SetText(SpecMenuOptions_favorite1, "Last Active Spec")
 		else
 			UIDropDownMenu_SetText(SpecMenuOptions_favorite1, SPM:GetSpecInfo(SPM.db.Specs[menuID][1]))
 		end
 
 		if SPM.db.Specs[menuID][2] == "LastSpec" then
-			UIDropDownMenu_SetText(SpecMenuOptions_favorite2, specmenu_options_swap)
+			UIDropDownMenu_SetText(SpecMenuOptions_favorite2, "Last Active Spec")
 		else
 			UIDropDownMenu_SetText(SpecMenuOptions_favorite2, SPM:GetSpecInfo(SPM.db.Specs[menuID][2]))
 		end
@@ -233,7 +232,7 @@ function SPM:CreateOptionsUI()
         GameTooltip:Show()
     end)
     self.options.autoMenu:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	self.options.autoMenu:SetScript("OnClick", function() self.db.self.options.autoMenu = not self.db.self.options.autoMenu end)
+	self.options.autoMenu:SetScript("OnClick", function() self.db.autoMenu = not self.db.autoMenu end)
 
 	self.options.hideMinimap = CreateFrame("CheckButton", "SpecMenuOptions_HideMinimap", SpecMenuOptionsFrame, "UICheckButtonTemplate")
 	self.options.hideMinimap:SetPoint("TOPLEFT", 15, -305)
@@ -299,7 +298,7 @@ function SPM:CreateOptionsUI()
 	self.options.buttonScale:SetSize(240,16)
 	self.options.buttonScale:SetPoint("TOPLEFT", 380,-190)
 	self.options.buttonScale:SetMinMaxValues(0.25, 1.5)
-	_G[self.options.buttonScale:GetName().."Text"]:SetText("Standalone Button Scale: ".." ("..round(self.options.displayScale:GetValue(),2)..")")
+	_G[self.options.buttonScale:GetName().."Text"]:SetText("Standalone Button Scale: ".." ("..round(self.options.buttonScale:GetValue(),2)..")")
 	_G[self.options.buttonScale:GetName().."Low"]:SetText(0.25)
 	_G[self.options.buttonScale:GetName().."High"]:SetText(1.5)
 	self.options.buttonScale:SetValueStep(0.01)

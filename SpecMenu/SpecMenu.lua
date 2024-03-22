@@ -131,7 +131,8 @@ function SPM:DewdropRegister(button, showUnlock)
                     'textHeight', self.db.txtSize,
                     'textWidth', self.db.txtSize,
                     'func', function() self.reorderMenu = not self.reorderMenu end,
-                    'notCheckable', true
+                    'notCheckable', true,
+                    'tooltipText', "Left click to move up\nRight click to move down"
                 )
             if showUnlock then
                 self.dewdrop:AddLine(
@@ -235,7 +236,8 @@ function SPM:EnchantPreset_DewdropRegister(button)
                     'textHeight', self.db.txtSize,
                     'textWidth', self.db.txtSize,
                     'func', function() self.reorderEnchantMenu = not self.reorderEnchantMenu end,
-                    'notCheckable', true
+                    'notCheckable', true,
+                    'tooltipText', "Left click to move up\nRight click to move down"
                 )
             self.dewdrop:AddLine(
 		    	'text', "Close Menu",
