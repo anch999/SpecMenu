@@ -16,6 +16,7 @@ local DefaultSettings  = {
     autoMenu = { false, CheckBox = "SpecMenuOptions_AutoMenu"},
     txtSize = 12,
     enchantSpecs = {{}},
+    SpecDisplayScale = 1,
 }
 
 --[[ DB = Name of the db you want to setup
