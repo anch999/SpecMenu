@@ -58,7 +58,6 @@ function SPM:MoveEntry(oldNum, newNum, profile)
         if newNum >= 1 and newNum <= #profile then
             if v.num == oldNum then
                 v.num = newNum
-
             elseif v.num == newNum then
                 v.num = oldNum
             end
