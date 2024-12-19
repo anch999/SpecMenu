@@ -304,17 +304,24 @@ end
 
 -- Used to show highlight as a frame mover
 function SPM:UnlockFrame()
-    if SPM.unlocked then
+    self = SPM
+    if self.unlocked then
         SpecMenuFrame_Menu:Show()
         SpecMenuFrame_Favorite:Show()
         SpecMenuFrame.Highlight:Hide()
-        SPM.unlocked = false
+        self.unlocked = false
         GameTooltip:Hide()
+        if self.db.ShowMenuOnHover then
+            self.standaloneButton:SetAlpha(0)
+        end
     else
         SpecMenuFrame_Menu:Hide()
         SpecMenuFrame_Favorite:Hide()
         SpecMenuFrame.Highlight:Show()
-        SPM.unlocked = true
+        self.unlocked = true
+        if self.db.ShowMenuOnHover then
+            self.standaloneButton:SetAlpha(10)
+        end
     end
 end
 

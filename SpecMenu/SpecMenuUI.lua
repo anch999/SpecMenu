@@ -43,7 +43,7 @@ function SPM:CreateMainUI(icon)
         end)
         self.standaloneButton:SetScript("OnLeave", function()
             GameTooltip:Hide()
-            if self.db.ShowMenuOnHover then
+            if self.db.ShowMenuOnHover and not self.unlocked then
                 self.standaloneButton:SetAlpha(0)
             end
         end)
@@ -68,7 +68,7 @@ function SPM:CreateMainUI(icon)
         self.standaloneButton.specbutton:SetScript("OnLeave", function()
             self.standaloneButton.specbutton.Highlight:Hide()
             GameTooltip:Hide()
-            if self.db.ShowMenuOnHover then
+            if self.db.ShowMenuOnHover and not self.unlocked then
                 self.standaloneButton:SetAlpha(0)
             end
         end)
@@ -110,7 +110,7 @@ function SPM:CreateMainUI(icon)
         self.standaloneButton.favoritebutton:SetScript("OnLeave", function()
             self.standaloneButton.favoritebutton.Highlight:Hide()
             GameTooltip:Hide()
-            if self.db.ShowMenuOnHover then
+            if self.db.ShowMenuOnHover and not self.unlocked then
                 self.standaloneButton:SetAlpha(0)
             end
         end)
