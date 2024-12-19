@@ -36,10 +36,9 @@ function SPM:CreateMainUI(icon)
                 GameTooltip:AddLine("Left click to drag")
                 GameTooltip:AddLine("Right click to lock frame")
                 GameTooltip:Show()
-            else
-                if self.db.ShowMenuOnHover then
-                    self.standaloneButton:SetAlpha(10)
-                end
+            end
+            if self.db.ShowMenuOnHover then
+                self.standaloneButton:SetAlpha(10)
             end
         end)
         self.standaloneButton:SetScript("OnLeave", function()
