@@ -48,7 +48,7 @@ function SPM:CreateOptionsUI()
 						tinsert(selections, name)
 					end
 					tinsert(selections, "Last Active Spec")
-					return selections, self:GetSpecInfo(self.db.Specs[self.optionsSpecNum][1]) or "Last Active Spec"
+					return selections, self.db.Specs[self.optionsSpecNum][1] == "Last Active Spec" and "Last Active Spec" or self:GetSpecInfo(self.db.Specs[self.optionsSpecNum][1])
 				end
 			},
 			{
@@ -65,7 +65,7 @@ function SPM:CreateOptionsUI()
 						tinsert(selections, name)
 					end
 					tinsert(selections, "Last Active Spec")
-					return selections, self:GetSpecInfo(self.db.Specs[self.optionsSpecNum][2]) or "Last Active Spec"
+					return selections, self.db.Specs[self.optionsSpecNum][2] == "Last Active Spec" and "Last Active Spec" or self:GetSpecInfo(self.db.Specs[self.optionsSpecNum][2])
 				end
 			},
 			{

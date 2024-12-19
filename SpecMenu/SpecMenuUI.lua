@@ -120,8 +120,9 @@ function SPM:CreateMainUI(icon)
         self.standaloneButton.icon:SetTexture(icon)
 end
 
+local specDisplayLoaded = false
 function SPM:CreateSpecDisplay()
-    if self.specDisplayLoaded or self.db.hideSpecDisplay then return end
+    if specDisplayLoaded or self.db.hideSpecDisplay then return end
     --Creates the main interface
     local displayframe = CreateFrame("Frame", "SpecDisplayFrame", UIParent)
     displayframe:SetSize(200,50)
@@ -175,7 +176,7 @@ function SPM:CreateSpecDisplay()
     end
     displayframe:SetScale(self.db.SpecDisplayScale or 1)
     displayframe:Show()
-    self.specDisplayLoaded = true
+    specDisplayLoaded = true
 end
 
 function SPM:InitializeStandalonePosition()

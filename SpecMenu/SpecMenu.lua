@@ -1,4 +1,4 @@
-local SPM = LibStub("AceAddon-3.0"):NewAddon("SpecMenu", "AceConsole-3.0", "AceTimer-3.0", "AceEvent-3.0", "AceComm-3.0", "AceSerializer-3.0", "SettingsCreater-1.0")
+local SPM = LibStub("AceAddon-3.0"):NewAddon("SpecMenu", "AceConsole-3.0", "AceTimer-3.0", "AceEvent-3.0", "AceComm-3.0", "AceSerializer-3.0", "SettingsCreator-1.0")
 SPECMENU = SPM
 SPM.dewdrop = AceLibrary("Dewdrop-2.0")
 local CYAN =  "|cff00ffff"
@@ -21,20 +21,19 @@ local DefaultSettings  = {
 function SPM:OnInitialize()
     self.db = self:SetupDB("SpecMenuDB", DefaultSettings)
     self.lastActiveSpec = self.db.LastSpec
-    self.optionsSpecNum = self:GetSpecId()
     self:RegisterEvent("ADDON_LOADED")
 end
 
 function SPM:OnEnable()
     self.SpecInfo = SPEC_SWAP_SPELLS
     local name, icon = self:GetSpecInfo(self:GetSpecId())
+    self.optionsSpecNum = self:GetSpecId()
+    self.class = select(2,UnitClass("player"))
     self:InitializeMinimap()
     self:SetMapIcon(icon)
-    self.class = select(2,UnitClass("player"))
     self:CreateMainUI(icon)
     self:PopulateSpecDB()
     self:CreateOptionsUI()
-    self.specDisplayLoaded = false
     self:CreateSpecDisplay()
     self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
     self:RegisterEvent("ASCENSION_CA_SPECIALIZATION_ACTIVE_ID_CHANGED")
@@ -348,7 +347,7 @@ function SPM:SlashCommandInitialize()
     local function SlashCommand(msg)
         if msg == "reset" then
             SpecMenuDB = nil
-            SPM:OnInitialize()
+            self:OnInitialize()
             DEFAULT_CHAT_FRAME:AddMessage("Settings Reset")
         elseif msg == "options" then
             SPM:OptionsToggle()
@@ -357,7 +356,7 @@ function SPM:SlashCommandInitialize()
             self.standaloneButton:ClearAllPoints()
             self.standaloneButton:SetPoint("CENTER",UIParent ,"CENTER",0,0)
         else
-            SPM:ToggleMainFrame()
+            self:ToggleMainFrame()
         end
     end
 

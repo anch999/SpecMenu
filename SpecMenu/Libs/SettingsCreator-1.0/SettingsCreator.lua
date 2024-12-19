@@ -1,7 +1,7 @@
-local MAJOR, MINOR = "SettingsCreater-1.0", 6
-local SettingsCreater, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
+local MAJOR, MINOR = "SettingsCreator-1.0", 7
+local SettingsCreator, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
-if not SettingsCreater then return end -- No Upgrade needed.
+if not SettingsCreator then return end -- No Upgrade needed.
 
 --Round number
 local function round(num, idp)
@@ -46,7 +46,7 @@ end
 CheckBox = Global name of the checkbox if it has one and first numbered table entry is the boolean
 Text = Global name of where the text and first numbered table entry is the default text 
 Frame = Frame or button etc you want hidden/shown at start based on condition ]]
-function SettingsCreater:SetupDB(dbName, defaultList)
+function SettingsCreator:SetupDB(dbName, defaultList)
     _G[dbName] = _G[dbName] or {}
     local db = _G[dbName]
     for table, v in pairs(defaultList) do
@@ -132,7 +132,7 @@ local function CreateDropDownMenu(options, db, frame, addonName, setPoint, opTab
     return options[opTable.Name]
 end
 
-function SettingsCreater:UpdateDropDownMenus(addonName)
+function SettingsCreator:UpdateDropDownMenus(addonName)
     if not addonName then return end
     for _, frame in pairs(dropDownList[addonName]) do
         if frame then
@@ -195,7 +195,7 @@ local function CreateTab(options, tabNum, data, tab)
         return options.frame[tab.Name]
 end
 
-function SettingsCreater:CreateOptionsPages(data, db)
+function SettingsCreator:CreateOptionsPages(data, db)
     if InterfaceOptionsFrame:GetWidth() < 850 then InterfaceOptionsFrame:SetWidth(850) end
 	local options = { frame = {} }
 		options.frame.panel = CreateFrame("FRAME", data.AddonName.."OptionsFrame", UIParent, nil)
@@ -270,9 +270,9 @@ local mixins = {
     "UpdateDropDownMenus",
 }
 
-SettingsCreater.embeds = SettingsCreater.embeds or {}
+SettingsCreator.embeds = SettingsCreator.embeds or {}
 
-function SettingsCreater:Embed(target)
+function SettingsCreator:Embed(target)
     self.embeds[target] = true
 	for _, v in pairs(mixins) do
 		target[v] = self[v]
@@ -281,6 +281,6 @@ function SettingsCreater:Embed(target)
 end
 
 -- Update embeds
-for addon, _ in pairs(SettingsCreater.embeds) do
-	SettingsCreater:Embed(addon)
+for addon, _ in pairs(SettingsCreator.embeds) do
+	SettingsCreator:Embed(addon)
 end
