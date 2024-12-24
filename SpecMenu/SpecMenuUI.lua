@@ -17,6 +17,16 @@ function SPM:CreateMainUI(icon)
         self.standaloneButton:RegisterForClicks("RightButtonDown")
         self.standaloneButton:SetScript("OnClick", function(button, btnclick) if self.unlocked then self:UnlockFrame() end end)
         self.standaloneButton:SetScale(self.db.buttonScale or 1)
+        if self.db.HideMenu then
+            self.standaloneButton:Hide()
+        else
+            self.standaloneButton:Show()
+        end
+        if self.db.ShowMenuOnHover then
+            self.standaloneButton:SetAlpha(10)
+        else
+            self.standaloneButton:SetAlpha(0)
+        end
         self.standaloneButton.icon = self.standaloneButton:CreateTexture(nil, "ARTWORK")
         self.standaloneButton.icon:SetSize(55,55)
         self.standaloneButton.icon:SetPoint("CENTER", self.standaloneButton,"CENTER",0,0)

@@ -9,8 +9,8 @@ local LIMEGREEN = "|cFF32CD32"
 local DefaultSettings  = {
     Specs = {{}},
     LastSpec = 1,
-    ShowMenuOnHover = { false, Frame = "SpecMenuFrame" },
-    HideMenu = { false, Frame = "SpecMenuFrame"},
+    ShowMenuOnHover = { false },
+    HideMenu = { false },
     minimap = { false },
     autoMenu = { false },
     txtSize = 12,

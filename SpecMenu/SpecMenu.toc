@@ -7,6 +7,6 @@
 ## X-Category: UnitFrame
 ## X-OptionsFrame: SpecMenuOptionsFrame
 ## DefaultState: enabled
-## Version: 2.2.2
+## Version: 2.2.3
 
 embeds.xml
