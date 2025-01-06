@@ -178,17 +178,4 @@ function SPM:CreateOptionsUI()
 	}
 
 	self.options = self:CreateOptionsPages(Options, SpecMenuDB)
-
-	self.options.discordLink = CreateFrame("Button", "SpecMenuOptions_DiscordLink", SpecMenuOptionsFrame)
-	self.options.discordLink:SetPoint("TOPLEFT", 15, -380)
-	self.options.discordLink.Lable = self.options.discordLink:CreateFontString(nil , "BORDER", "GameFontNormal")
-	self.options.discordLink.Lable:SetJustifyH("LEFT")
-	self.options.discordLink.Lable:SetPoint("LEFT", self.options.discordLink, 0, 0)
-	self.options.discordLink.Lable:SetText("For Help or suggestions come join us on Discord\nhttps://discord.gg/BwvpzF9cea"..WHITE.." (Click to copy link)")
-	self.options.discordLink:SetScript("OnClick", function()
-		Internal_CopyToClipboard("https://discord.gg/BwvpzF9cea")
-		DEFAULT_CHAT_FRAME:AddMessage("Discord link copyed to clipboard")
-	end)
-	self.options.discordLink:SetSize(self.options.discordLink.Lable:GetStringWidth(), self.options.discordLink.Lable:GetStringHeight())
-
 end

@@ -17,16 +17,7 @@ function SPM:CreateMainUI(icon)
         self.standaloneButton:RegisterForClicks("RightButtonDown")
         self.standaloneButton:SetScript("OnClick", function(button, btnclick) if self.unlocked then self:UnlockFrame() end end)
         self.standaloneButton:SetScale(self.db.buttonScale or 1)
-        if self.db.HideMenu then
-            self.standaloneButton:Hide()
-        else
-            self.standaloneButton:Show()
-        end
-        if self.db.ShowMenuOnHover then
-            self.standaloneButton:SetAlpha(10)
-        else
-            self.standaloneButton:SetAlpha(0)
-        end
+
         self.standaloneButton.icon = self.standaloneButton:CreateTexture(nil, "ARTWORK")
         self.standaloneButton.icon:SetSize(55,55)
         self.standaloneButton.icon:SetPoint("CENTER", self.standaloneButton,"CENTER",0,0)
@@ -47,7 +38,7 @@ function SPM:CreateMainUI(icon)
                 GameTooltip:AddLine("Right click to lock frame")
                 GameTooltip:Show()
             end
-            if self.db.ShowMenuOnHover then
+            if self.db.ShowMenuOnHover and not UnitAffectingCombat("player") then
                 self.standaloneButton:SetAlpha(10)
             end
         end)
@@ -71,7 +62,7 @@ function SPM:CreateMainUI(icon)
         self.standaloneButton.specbutton:SetScript("OnEnter", function(button)
             self:OnEnter(button, true)
             self.standaloneButton.specbutton.Highlight:Show()
-            if self.db.ShowMenuOnHover then
+            if self.db.ShowMenuOnHover and not UnitAffectingCombat("player") then
                 self.standaloneButton:SetAlpha(10)
             end
         end)
@@ -113,7 +104,7 @@ function SPM:CreateMainUI(icon)
                 GameTooltip:Show()
             end
             self.standaloneButton.favoritebutton.Highlight:Show()
-            if self.db.ShowMenuOnHover then
+            if self.db.ShowMenuOnHover and not UnitAffectingCombat("player") then
                 self.standaloneButton:SetAlpha(10)
             end
         end)
@@ -124,6 +115,13 @@ function SPM:CreateMainUI(icon)
                 self.standaloneButton:SetAlpha(0)
             end
         end)
+
+        if self.db.HideMenu then
+            self.standaloneButton:Hide()
+        else
+            self.standaloneButton:Show()
+        end
+
         self:InitializeStandalonePosition()
         self:SetFrameAlpha()
         self.standaloneButton.icon:SetTexture(icon)
@@ -133,58 +131,58 @@ local specDisplayLoaded = false
 function SPM:CreateSpecDisplay()
     if specDisplayLoaded or self.db.hideSpecDisplay then return end
     --Creates the main interface
-    local displayframe = CreateFrame("Frame", "SpecDisplayFrame", UIParent)
-    displayframe:SetSize(200,50)
-    displayframe:SetMovable(true)
-    displayframe.Back = displayframe:CreateTexture(nil, "BACKGROUND")
-    displayframe.Back:SetAllPoints()
-    displayframe.Back:SetSize(200,50)
-    displayframe.Back:SetPoint("CENTER",displayframe)
-    displayframe:SetScale(self.db.SpecDisplayScale or 1)
-    displayframe:SetBackdrop({
+    self.displayFrame = CreateFrame("Frame", "SpecDisplayFrame", UIParent)
+    self.displayFrame:SetSize(200,50)
+    self.displayFrame:SetMovable(true)
+    self.displayFrame.Back = self.displayFrame:CreateTexture(nil, "BACKGROUND")
+    self.displayFrame.Back:SetAllPoints()
+    self.displayFrame.Back:SetSize(200,50)
+    self.displayFrame.Back:SetPoint("CENTER",self.displayFrame)
+    self.displayFrame:SetScale(self.db.SpecDisplayScale or 1)
+    self.displayFrame:SetBackdrop({
         bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", tile = true, tileSize = 16,
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 8,
         insets = { left = 1, right = 1, top = 1, bottom = 1 },
     })
     if self.db.hideSpecDisplayBackground then
-        displayframe:SetBackdropColor(0, 0, 0, 0)
-        displayframe:SetBackdropBorderColor(0, 0, 0, 0)
+        self.displayFrame:SetBackdropColor(0, 0, 0, 0)
+        self.displayFrame:SetBackdropBorderColor(0, 0, 0, 0)
     else
-        displayframe:SetBackdropColor(0, 0, 0, 5)
-        displayframe:SetBackdropBorderColor(0, 0, 0, 5)
+        self.displayFrame:SetBackdropColor(0, 0, 0, 5)
+        self.displayFrame:SetBackdropBorderColor(0, 0, 0, 5)
     end
 
-    displayframe:EnableMouse(true)
-    displayframe:RegisterForDrag("LeftButton")
-    displayframe:SetScript("OnDragStart", function() displayframe:StartMoving() end)
-    displayframe:SetScript("OnDragStop", function()
-        displayframe:StopMovingOrSizing()
-        self.db.DisplayPos = {displayframe:GetPoint()}
+    self.displayFrame:EnableMouse(true)
+    self.displayFrame:RegisterForDrag("LeftButton")
+    self.displayFrame:SetScript("OnDragStart", function() self.displayFrame:StartMoving() end)
+    self.displayFrame:SetScript("OnDragStop", function()
+        self.displayFrame:StopMovingOrSizing()
+        self.db.DisplayPos = {self.displayFrame:GetPoint()}
         self.db.DisplayPos[2] = "UIParent"
     end)
-    displayframe:SetMovable(true)
-    displayframe.text = displayframe:CreateFontString()
-    displayframe.text:SetFont("Fonts\\FRIZQT__.TTF", 13)
-    displayframe.text:SetFontObject(GameFontNormal)
-    displayframe.text:SetPoint("LEFT", displayframe, 10, 10)
-    displayframe.text:SetJustifyH("LEFT")
-    displayframe.text2 = displayframe:CreateFontString()
-    displayframe.text2:SetFont("Fonts\\FRIZQT__.TTF", 13)
-    displayframe.text2:SetFontObject(GameFontNormal)
-    displayframe.text2:SetPoint("BOTTOMLEFT", displayframe.text, 0 ,-17)
-    displayframe.text2:SetJustifyH("LEFT")
+    self.displayFrame:SetMovable(true)
+    self.displayFrame.text = self.displayFrame:CreateFontString()
+    self.displayFrame.text:SetFont("Fonts\\FRIZQT__.TTF", 13)
+    self.displayFrame.text:SetFontObject(GameFontNormal)
+    self.displayFrame.text:SetPoint("LEFT", self.displayFrame, 10, 10)
+    self.displayFrame.text:SetJustifyH("LEFT")
+    self.displayFrame.text2 = self.displayFrame:CreateFontString()
+    self.displayFrame.text2:SetFont("Fonts\\FRIZQT__.TTF", 13)
+    self.displayFrame.text2:SetFontObject(GameFontNormal)
+    self.displayFrame.text2:SetPoint("BOTTOMLEFT", self.displayFrame.text, 0 ,-17)
+    self.displayFrame.text2:SetJustifyH("LEFT")
     self:SetDisplayText()
 
     if self.db.DisplayPos then
         local pos = self.db.DisplayPos
-        displayframe:ClearAllPoints()
-        displayframe:SetPoint(pos[1], pos[2], pos[3], pos[4], pos[5])
+        self.displayFrame:ClearAllPoints()
+        self.displayFrame:SetPoint(pos[1], pos[2], pos[3], pos[4], pos[5])
     else
-        displayframe:ClearAllPoints()
-        displayframe:SetPoint("CENTER", UIParent)
+        self.displayFrame:ClearAllPoints()
+        self.displayFrame:SetPoint("CENTER", UIParent)
     end
-    displayframe:SetScale(self.db.SpecDisplayScale or 1)
-    displayframe:Show()
+    self.displayFrame:SetScale(self.db.SpecDisplayScale or 1)
+    self.displayFrame:Show()
     specDisplayLoaded = true
 end
 

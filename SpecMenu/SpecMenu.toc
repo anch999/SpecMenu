@@ -6,7 +6,8 @@
 ## SavedVariablesPerCharacter: SpecMenuDB
 ## X-Category: UnitFrame
 ## X-OptionsFrame: SpecMenuOptionsFrame
+## X-Discord: https://discord.gg/BwvpzF9cea
 ## DefaultState: enabled
-## Version: 2.2.3
+## Version: 2.2.4
 
 embeds.xml

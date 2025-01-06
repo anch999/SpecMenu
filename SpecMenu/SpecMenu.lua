@@ -7,14 +7,14 @@ local LIMEGREEN = "|cFF32CD32"
 
 --Set Savedvariables defaults
 local DefaultSettings  = {
-    Specs = {{}},
+    Specs = {},
     LastSpec = 1,
-    ShowMenuOnHover = { false },
-    HideMenu = { false },
-    minimap = { false },
-    autoMenu = { false },
+    ShowMenuOnHover = false,
+    HideMenu = false,
+    minimap = false,
+    autoMenu = false,
     txtSize = 12,
-    enchantSpecs = {{}},
+    enchantSpecs = {},
     SpecDisplayScale = 1,
 }
 
@@ -294,14 +294,6 @@ function SPM:MenuClick(button, arg1)
     end
 end
 
-function SPM:ToggleStandaloneButton(toggle)
-    if toggle then
-        self.standaloneButton:Show()
-    else
-        self.standaloneButton:Hide()
-    end
-end
-
 -- Used to show highlight as a frame mover
 function SPM:UnlockFrame()
     self = SPM
@@ -338,10 +330,10 @@ end
 
 -- toggle the main button frame
 function SPM:ToggleMainFrame()
-    if SpecMenuFrame:IsVisible() then
-        SpecMenuFrame:Hide()
+    if self.standaloneButton:IsVisible() then
+        self.standaloneButton:Hide()
     else
-        SpecMenuFrame:Show()
+        self.standaloneButton:Show()
     end
 end
 
