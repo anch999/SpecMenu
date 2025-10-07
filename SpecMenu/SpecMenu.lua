@@ -389,6 +389,7 @@ function SPM:OnEnter(button,  showUnlock)
 end
 
 function SPM:SetDisplayText()
+    if not SpecDisplayFrame then return end
     local specName = "S: |cffffffff"..SPM:GetSpecInfo(SPM:GetSpecId())
     local presetName = "E: |cffffffff"..SPM:GetPresetName(SPM:GetPresetId())
     SpecDisplayFrame.text:SetText(specName)
