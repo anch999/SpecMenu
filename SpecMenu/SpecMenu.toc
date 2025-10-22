@@ -8,6 +8,6 @@
 ## X-OptionsFrame: SpecMenuOptionsFrame
 ## X-Discord: https://discord.gg/BwvpzF9cea
 ## DefaultState: enabled
-## Version: 2.2.4
+## Version: 2.2.5
 
 embeds.xml

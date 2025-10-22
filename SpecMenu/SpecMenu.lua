@@ -261,22 +261,25 @@ end
 function SPM:FavoriteClick(arg1)
     local specNum
     self.dewdrop:Close()
+    local specID = self:GetSpecId()
+    local spec = self.db.Specs[specID]
+    if not spec then return end
     if (arg1=="LeftButton") then
-        if self.db.Specs[self:GetSpecId()][1] == "LastSpec" then
+        if spec[1] == "LastSpec" then
             specNum = self.db.LastSpec
         else
-            specNum =  self.db.Specs[self:GetSpecId()][1]
+            specNum =  spec[1]
         end
     elseif (arg1=="RightButton") then
-        if self.db.Specs[self:GetSpecId()][2] == "LastSpec" then
+        if spec[2] == "LastSpec" then
             specNum = self.db.LastSpec
         else
-        specNum =  self.db.Specs[self:GetSpecId()][2]
+            specNum =  spec[2]
         end
     end
-    if specNum ~= self:GetSpecId() then
+    if specNum ~= specID then
         if IsMounted() then Dismount() end
-        self.lastActiveSpec = self:GetSpecId()
+        self.lastActiveSpec = specID
         self.specNum = specNum
         local spell = SpecializationUtil.GetSpecializationSpell(specNum)
         CastSpecialSpell(spell)

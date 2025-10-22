@@ -14,6 +14,7 @@ function SPM:CreateOptionsUI()
 	local Options = {
 		AddonName = "SpecMenu",
 		TitleText = "SpecMenu Settings",
+		About = true,
 		{
 		Name = "SpecMenu",
 		Left = {
@@ -39,7 +40,7 @@ function SPM:CreateOptionsUI()
 				Name = "favorite1",
 				Lable = "Favorite Left Click",
 				Func = 	function(name, specID)
-					self.db.Specs[self.optionsSpecNum][1] = name == "Last Active Spec" and name or specID
+					self.db.Specs[self.optionsSpecNum][1] = (name == "Last Active Spec") and "LastSpec" or specID
 				end,
 				Menu = function()
 					local selections = {}
@@ -48,7 +49,7 @@ function SPM:CreateOptionsUI()
 						tinsert(selections, name)
 					end
 					tinsert(selections, "Last Active Spec")
-					return selections, self.db.Specs[self.optionsSpecNum] and (self.db.Specs[self.optionsSpecNum][1] == "Last Active Spec" and "Last Active Spec" or self:GetSpecInfo(self.db.Specs[self.optionsSpecNum][1]))
+					return selections, self.db.Specs[self.optionsSpecNum] and (self.db.Specs[self.optionsSpecNum][1] == "LastSpec" and "Last Active Spec" or self:GetSpecInfo(self.db.Specs[self.optionsSpecNum][1]))
 				end
 			},
 			{
@@ -56,7 +57,7 @@ function SPM:CreateOptionsUI()
 				Name = "favorite2",
 				Lable = "Favorite Right Click",
 				Func = 	function(name, specID)
-					self.db.Specs[self.optionsSpecNum][2] = name == "Last Active Spec" and name or specID
+					self.db.Specs[self.optionsSpecNum][2] = (name == "Last Active Spec") and "LastSpec" or specID
 				end,
 				Menu = function()
 					local selections = {}
@@ -65,7 +66,7 @@ function SPM:CreateOptionsUI()
 						tinsert(selections, name)
 					end
 					tinsert(selections, "Last Active Spec")
-					return selections, self.db.Specs[self.optionsSpecNum] and (self.db.Specs[self.optionsSpecNum][2] == "Last Active Spec" and "Last Active Spec" or self:GetSpecInfo(self.db.Specs[self.optionsSpecNum][2]))
+					return selections, self.db.Specs[self.optionsSpecNum] and (self.db.Specs[self.optionsSpecNum][2] == "LastSpec" and "Last Active Spec" or self:GetSpecInfo(self.db.Specs[self.optionsSpecNum][2]))
 				end
 			},
 			{

@@ -89,17 +89,12 @@ function SPM:CreateMainUI(icon)
                 if not CA_IsSpellKnown(self.SpecInfo[1]) then return end
                 GameTooltip:SetOwner(button, "ANCHOR_TOP")
                 GameTooltip:AddLine("Favorite Specs")
-                local leftTxt, rightTxt
-                if self.db.Specs[self:GetSpecId()][1] == "LastSpec" then
-                    leftTxt = "Last Spec"
-                else
-                    leftTxt = self:GetSpecInfo(self.db.Specs[self:GetSpecId()][1])
-                end
-                if self.db.Specs[self:GetSpecId()][2] == "LastSpec" then
-                    rightTxt = "Last Spec"
-                else
-                    rightTxt = self:GetSpecInfo(self.db.Specs[self:GetSpecId()][2])
-                end
+                local favOne = self.db.Specs[self:GetSpecId()][1]
+                local leftTxt = self:GetSpecInfo((favOne == "LastSpec") and self.db.LastSpec or favOne)
+
+                local favTwo = self.db.Specs[self:GetSpecId()][2]
+                local rightTxt = self:GetSpecInfo((favTwo == "LastSpec") and self.db.LastSpec or favTwo)
+
                 GameTooltip:AddDoubleLine("|cffffffff"..leftTxt,"|cffffffff"..rightTxt)
                 GameTooltip:Show()
             end
