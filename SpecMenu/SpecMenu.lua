@@ -172,7 +172,8 @@ function SPM:DewdropRegister(button, showUnlock)
 
     if not hookWorldFrame then
         WorldFrame:HookScript("OnEnter", function()
-            if self.dewdrop:IsOpen() then
+          local mFocus = GetMouseFocus()
+          if self.dewdrop:IsOpen(button) and mFocus == WorldFrame then
                 self.dewdrop:Close()
             end
         end)
